@@ -165,13 +165,13 @@ class WebSocketClient {
     }, this.reconnectDelay * this.reconnectAttempts)
   }
 
-  send(message: string): boolean {
+  async send(message: string): Promise<boolean> {
     if (!this.webSocket || this.state !== WebSocketState.CONNECTED) {
       logger.warn('WebSocket not connected, cannot send message')
       return false
     }
 
-    const result = this.webSocket.send(message)
+    const result = await this.webSocket.send(message)
     if (!result) {
       logger.error('Failed to send message')
     }

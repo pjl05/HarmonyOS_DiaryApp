@@ -48,8 +48,12 @@ class HttpClient {
 
       // 构建 headers
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        ...options.headers
+        'Content-Type': 'application/json'
+      }
+      if (options.headers) {
+        Object.keys(options.headers).forEach((key: string) => {
+          headers[key] = options.headers![key]
+        })
       }
 
       if (token) {
@@ -72,7 +76,7 @@ class HttpClient {
       return response
     } catch (error) {
       logger.error(`HTTP Error: ${JSON.stringify(error)}`)
-      throw error
+      throw new Error(error instanceof Error ? error.message : 'HTTP request failed')
     } finally {
       httpRequest.destroy()
     }
