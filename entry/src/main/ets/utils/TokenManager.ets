@@ -67,7 +67,10 @@ class TokenManager {
   }
 
   async clearAll(): Promise<void> {
-    await PreferencesHelper.clear()
+    await PreferencesHelper.remove(StorageKeys.TOKEN)
+    await PreferencesHelper.remove(StorageKeys.USER_ID)
+    await PreferencesHelper.remove(StorageKeys.USERNAME)
+    await PreferencesHelper.remove(StorageKeys.IS_LOGGED_IN)
     logger.info('All auth data cleared')
   }
 }
