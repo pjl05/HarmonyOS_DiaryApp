@@ -45,6 +45,25 @@
           }
         ],
       }
-    ]
+    ],
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.INTERNET"
+      },
+      {
+        "name": "ohos.permission.ACCESS_NETWORK_STATE"
+      }
+    ],
+    "securityConfig": {
+      "domainSettings": {
+        "cleartextPermitted": true,
+        "domains": [
+          {
+            "subdomains": true,
+            "name": "39.97.46.231"
+          }
+        ]
+      }
+    }
   }
 }
