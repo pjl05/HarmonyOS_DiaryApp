@@ -9,8 +9,8 @@ export class ApiConstants {
   // API 端点
   static readonly API_AUTH_LOGIN: string = 'api/auth/login'
   static readonly API_AUTH_REGISTER: string = 'api/auth/register'
-  static readonly API_AUTH_SEND_CODE: string = 'api/auth/sendCode'
-  static readonly API_AUTH_FORGOT_PASSWORD: string = 'api/auth/forgotPassword'
+  static readonly API_AUTH_SEND_CODE: string = 'api/auth/send-code'
+  static readonly API_AUTH_FORGOT_PASSWORD: string = 'api/auth/reset-password'
 
   static readonly API_DIARY: string = 'api/diary'
   static readonly API_DIARY_EXPORT: string = 'api/diary/export'

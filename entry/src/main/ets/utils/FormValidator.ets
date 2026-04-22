@@ -18,68 +18,78 @@ export class FormValidator {
    * 验证用户名
    */
   static isValidUsername(username: string): boolean {
-    return username && username.trim().length > 0
+    return username.trim().length > 0
   }
 
   /**
    * 验证密码
    */
   static isValidPassword(password: string): boolean {
-    return password && password.length > 0
+    return password.length > 0
   }
 
   /**
    * 验证验证码（4-6位数字）
    */
   static isValidCode(code: string): boolean {
-    return code && /^\d{4,6}$/.test(code)
+    return /^\d{4,6}$/.test(code)
   }
 
   /**
    * 验证登录表单
    */
-  static validateLogin(loginName: string, password: string): { valid: boolean, error: string } {
+  static validateLogin(loginName: string, password: string): ValidationResult {
     if (!loginName || loginName.trim().length === 0) {
-      return { valid: false, error: '请输入用户名或邮箱' }
+      return new ValidationResult(false, '请输入用户名或邮箱')
     }
     if (!password || password.length === 0) {
-      return { valid: false, error: '请输入密码' }
+      return new ValidationResult(false, '请输入密码')
     }
-    return { valid: true, error: '' }
+    return new ValidationResult(true, '')
   }
 
   /**
    * 验证注册表单
    */
-  static validateRegister(username: string, email: string, password: string, code: string): { valid: boolean, error: string } {
+  static validateRegister(username: string, email: string, password: string, code: string): ValidationResult {
     if (!username || username.trim().length === 0) {
-      return { valid: false, error: '请输入昵称' }
+      return new ValidationResult(false, '请输入昵称')
     }
-    if (!this.isValidEmail(email)) {
-      return { valid: false, error: '请输入有效的邮箱地址' }
+    if (!FormValidator.isValidEmail(email)) {
+      return new ValidationResult(false, '请输入有效的邮箱地址')
     }
     if (!password || password.length === 0) {
-      return { valid: false, error: '请输入密码' }
+      return new ValidationResult(false, '请输入密码')
     }
-    if (!this.isValidCode(code)) {
-      return { valid: false, error: '请输入4-6位验证码' }
+    if (!FormValidator.isValidCode(code)) {
+      return new ValidationResult(false, '请输入4-6位验证码')
     }
-    return { valid: true, error: '' }
+    return new ValidationResult(true, '')
   }
 
   /**
    * 验证忘记密码表单
    */
-  static validateResetPassword(email: string, code: string, newPassword: string): { valid: boolean, error: string } {
-    if (!this.isValidEmail(email)) {
-      return { valid: false, error: '请输入有效的邮箱地址' }
+  static validateResetPassword(email: string, code: string, newPassword: string): ValidationResult {
+    if (!FormValidator.isValidEmail(email)) {
+      return new ValidationResult(false, '请输入有效的邮箱地址')
     }
-    if (!this.isValidCode(code)) {
-      return { valid: false, error: '请输入4-6位验证码' }
+    if (!FormValidator.isValidCode(code)) {
+      return new ValidationResult(false, '请输入4-6位验证码')
     }
     if (!newPassword || newPassword.length === 0) {
-      return { valid: false, error: '请输入新密码' }
+      return new ValidationResult(false, '请输入新密码')
     }
-    return { valid: true, error: '' }
+    return new ValidationResult(true, '')
+  }
+}
+
+export class ValidationResult {
+  valid: boolean
+  error: string
+
+  constructor(valid: boolean, error: string) {
+    this.valid = valid
+    this.error = error
   }
 }

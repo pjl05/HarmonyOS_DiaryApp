@@ -6,35 +6,42 @@
 import router from '@ohos.router'
 import { getLogger } from '../utils/Logger.ets'
 import { ForgotPasswordViewModel, ResetState } from '../viewmodels/ForgotPasswordViewModel.ets'
-import DanmakuView from '../components/common/DanmakuView.ets'
-import ToastHelper from '../components/common/ToastDialog.ets'
+import { DanmakuView } from '../components/common/DanmakuView.ets'
+import { ToastHelper } from '../components/common/ToastDialog.ets'
 
 const logger = getLogger('ForgotPasswordPage')
 
 @Entry
 @Component
 struct ForgotPasswordPage {
-  @State viewModel: ForgotPasswordViewModel = new ForgotPasswordViewModel()
+  // 直接使用 @State 管理所有状态
+  @State email: string = ''
+  @State username: string = ''
+  @State code: string = ''
+  @State newPassword: string = ''
+  @State state: ResetState = ResetState.IDLE
+  @State errorMessage: string = ''
   @State codeCountdown: number = 0
   @State isDanmakuRunning: boolean = false
 
+  private viewModel: ForgotPasswordViewModel = new ForgotPasswordViewModel()
   private countdownTimer: number = -1
 
-  aboutToAppear() {
+  aboutToAppear(): void {
     logger.info('ForgotPasswordPage aboutToAppear')
   }
 
-  aboutToDisappear() {
+  aboutToDisappear(): void {
     if (this.countdownTimer !== -1) {
       clearInterval(this.countdownTimer)
     }
   }
 
-  onPageShow() {
+  onPageShow(): void {
     this.isDanmakuRunning = true
   }
 
-  onPageHide() {
+  onPageHide(): void {
     this.isDanmakuRunning = false
   }
 
@@ -44,7 +51,8 @@ struct ForgotPasswordPage {
 
   async handleSendCode(): Promise<void> {
     if (this.codeCountdown > 0) return
-    const success = await this.viewModel.sendCode()
+
+    const success = await this.viewModel.sendCode(this.email, this.username)
     if (success) {
       this.startCountdown()
     }
@@ -62,11 +70,14 @@ struct ForgotPasswordPage {
   }
 
   async handleReset(): Promise<void> {
-    const success = await this.viewModel.resetPassword()
+    const success = await this.viewModel.resetPassword(this.email, this.code, this.newPassword)
     if (success) {
+      ToastHelper.showShort('密码重置成功，请重新登录')
       setTimeout(() => {
         router.back()
       }, 1500)
+    } else {
+      this.errorMessage = this.viewModel.errorMessage
     }
   }
 
@@ -105,7 +116,7 @@ struct ForgotPasswordPage {
             .padding({ left: 16, right: 16 })
             .margin({ bottom: 16 })
             .onChange((value: string) => {
-              this.viewModel.username = value
+              this.username = value
             })
 
           TextInput({ placeholder: '请输入邮箱' })
@@ -116,7 +127,7 @@ struct ForgotPasswordPage {
             .padding({ left: 16, right: 16 })
             .margin({ bottom: 16 })
             .onChange((value: string) => {
-              this.viewModel.email = value
+              this.email = value
             })
 
           Row() {
@@ -127,7 +138,7 @@ struct ForgotPasswordPage {
               .borderRadius(12)
               .padding({ left: 16, right: 16 })
               .onChange((value: string) => {
-                this.viewModel.code = value
+                this.code = value
               })
 
             Button(this.codeCountdown > 0 ? `${this.codeCountdown}s` : '发送验证码')
@@ -151,18 +162,26 @@ struct ForgotPasswordPage {
             .type(InputType.Password)
             .margin({ bottom: 24 })
             .onChange((value: string) => {
-              this.viewModel.newPassword = value
+              this.newPassword = value
             })
 
           Button('重置密码')
             .width('100%')
             .height(48)
-            .backgroundColor(this.viewModel.state === ResetState.LOADING ? '#CCCCCC' : '#00BCD4')
+            .backgroundColor(this.state === ResetState.LOADING ? '#CCCCCC' : '#00BCD4')
             .fontColor('#FFFFFF')
             .fontSize(18)
             .borderRadius(24)
-            .enabled(this.viewModel.state !== ResetState.LOADING)
+            .enabled(this.state !== ResetState.LOADING)
             .onClick(() => this.handleReset())
+
+          // 错误提示
+          if (this.errorMessage) {
+            Text(this.errorMessage)
+              .fontSize(12)
+              .fontColor('#FF5252')
+              .margin({ top: 8 })
+          }
         }
         .padding(24)
         .backgroundColor('#FFFFFF')

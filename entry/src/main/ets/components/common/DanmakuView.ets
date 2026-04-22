@@ -81,20 +81,6 @@ export struct DanmakuView {
           .opacity(0.92)
           .position({ y: `${bubble.y}%` })
           .translate({ x: 300 })
-          .animation({
-            duration: bubble.duration,
-            curve: Curve.Linear
-          })
-          .onAppear(() => {
-            animateTo({
-              duration: bubble.duration,
-              curve: Curve.Linear,
-              iterations: 1,
-              playMode: PlayMode.Normal
-            }, () => {
-              // 动画逻辑
-            })
-          })
       })
     }
     .width('100%')

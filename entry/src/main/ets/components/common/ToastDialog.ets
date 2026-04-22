@@ -15,7 +15,7 @@ export class ToastHelper {
     return ToastHelper.instance
   }
 
-  showShort(message: string): void {
+  static showShort(message: string): void {
     try {
       promptAction.showToast({
         message: message,
@@ -26,7 +26,7 @@ export class ToastHelper {
     }
   }
 
-  showLong(message: string): void {
+  static showLong(message: string): void {
     try {
       promptAction.showToast({
         message: message,
@@ -37,13 +37,11 @@ export class ToastHelper {
     }
   }
 
-  showSuccess(message: string): void {
-    this.showShort(message)
+  static showSuccess(message: string): void {
+    ToastHelper.showShort(message)
   }
 
-  showError(message: string): void {
-    this.showShort(message)
+  static showError(message: string): void {
+    ToastHelper.showShort(message)
   }
 }
-
-export default ToastHelper.getInstance()

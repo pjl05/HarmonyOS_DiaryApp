@@ -6,8 +6,8 @@
 import router from '@ohos.router'
 import { getLogger } from '../utils/Logger.ets'
 import { LoginViewModel, LoginState } from '../viewmodels/LoginViewModel.ets'
-import DanmakuView from '../components/common/DanmakuView.ets'
-import ToastHelper from '../components/common/ToastDialog.ets'
+import { DanmakuView } from '../components/common/DanmakuView.ets'
+import { ToastHelper } from '../components/common/ToastDialog.ets'
 import { BiometricHelper, BiometricError } from '../utils/BiometricHelper.ets'
 
 const logger = getLogger('LoginPage')
@@ -15,7 +15,15 @@ const logger = getLogger('LoginPage')
 @Entry
 @Component
 struct LoginPage {
-  @State viewModel: LoginViewModel = new LoginViewModel()
+  // 直接使用 @State 管理所有状态
+  @State loginName: string = ''
+  @State password: string = ''
+  @State isLoginMode: boolean = true
+  @State loginState: LoginState = LoginState.IDLE
+  @State errorMessage: string = ''
+  @State biometricAvailable: boolean = false
+
+  // 注册相关状态
   @State registerUsername: string = ''
   @State registerEmail: string = ''
   @State registerCode: string = ''
@@ -23,24 +31,35 @@ struct LoginPage {
   @State codeCountdown: number = 0
   @State isDanmakuRunning: boolean = false
 
+  private viewModel: LoginViewModel = new LoginViewModel()
   private countdownTimer: number = -1
 
-  aboutToAppear() {
+  aboutToAppear(): void {
     logger.info('LoginPage aboutToAppear')
+    this.checkBiometricAvailability()
   }
 
-  aboutToDisappear() {
+  aboutToDisappear(): void {
     if (this.countdownTimer !== -1) {
       clearInterval(this.countdownTimer)
     }
   }
 
-  onPageShow() {
+  onPageShow(): void {
     this.isDanmakuRunning = true
   }
 
-  onPageHide() {
+  onPageHide(): void {
     this.isDanmakuRunning = false
+  }
+
+  async checkBiometricAvailability(): Promise<void> {
+    try {
+      const biometricHelper = BiometricHelper.getInstance()
+      this.biometricAvailable = await biometricHelper.isBiometricSupported()
+    } catch {
+      this.biometricAvailable = false
+    }
   }
 
   async handleSubmit(): Promise<void> {
@@ -49,20 +68,29 @@ struct LoginPage {
       return
     }
 
-    if (this.viewModel.isLoginMode) {
-      const success = await this.viewModel.login()
+    if (this.isLoginMode) {
+      logger.info(`Login attempt: ${this.loginName}`)
+      const success = await this.viewModel.login(this.loginName, this.password)
+      logger.info(`Login result: ${success}, state: ${this.loginState}`)
       if (success) {
+        ToastHelper.showShort('登录成功！')
         this.navigateToMain()
+      } else {
+        this.errorMessage = this.viewModel.errorMessage
       }
     } else {
+      logger.info(`Register attempt: ${this.registerUsername}, ${this.registerEmail}`)
       const success = await this.viewModel.register(
         this.registerUsername,
         this.registerEmail,
-        this.viewModel.password,
+        this.password,
         this.registerCode
       )
       if (success) {
+        ToastHelper.showShort('注册成功！')
         this.navigateToMain()
+      } else {
+        this.errorMessage = this.viewModel.errorMessage
       }
     }
   }
@@ -93,14 +121,15 @@ struct LoginPage {
   }
 
   handleBiometricLogin(): void {
-    BiometricHelper.authenticate(
+    const helper = BiometricHelper.getInstance()
+    helper.authenticate(
       '身份验证',
       '验证后即可登录',
       () => {
         ToastHelper.showShort('验证成功')
         this.navigateToMain()
       },
-      (error, message) => {
+      (error: BiometricError, message: string): void => {
         if (error !== BiometricError.USER_CANCEL) {
           ToastHelper.showShort(message)
         }
@@ -109,11 +138,19 @@ struct LoginPage {
   }
 
   navigateToMain(): void {
-    router.replaceUrl({ url: 'pages/MainPage' })
+    logger.info('Navigating to MainPage')
+    const result = router.replaceUrl({ url: 'pages/MainPage' })
+    logger.info(`replaceUrl called, result: ${result}`)
+    logger.info('After replaceUrl call')
   }
 
   navigateToForgotPassword(): void {
     router.pushUrl({ url: 'pages/ForgotPasswordPage' })
+  }
+
+  toggleMode(): void {
+    this.isLoginMode = !this.isLoginMode
+    this.errorMessage = ''
   }
 
   build() {
@@ -143,7 +180,7 @@ struct LoginPage {
 
           // 表单
           Column() {
-            if (this.viewModel.isLoginMode) {
+            if (this.isLoginMode) {
               this.buildLoginForm()
             } else {
               this.buildRegisterForm()
@@ -168,30 +205,38 @@ struct LoginPage {
             .margin({ top: 16 })
 
             // 提交按钮
-            Button(this.viewModel.isLoginMode ? '登录' : '注册')
+            Button(this.isLoginMode ? '登录' : '注册')
               .width('100%')
               .height(48)
-              .backgroundColor(this.viewModel.loginState === LoginState.LOADING ? '#CCCCCC' : '#00BCD4')
+              .backgroundColor(this.loginState === LoginState.LOADING ? '#CCCCCC' : '#00BCD4')
               .fontColor('#FFFFFF')
               .fontSize(18)
               .borderRadius(24)
-              .enabled(this.viewModel.loginState !== LoginState.LOADING)
+              .enabled(this.loginState !== LoginState.LOADING)
               .onClick(() => this.handleSubmit())
               .margin({ top: 24 })
 
+            // 错误提示
+            if (this.errorMessage) {
+              Text(this.errorMessage)
+                .fontSize(12)
+                .fontColor('#FF5252')
+                .margin({ top: 8 })
+            }
+
             // 切换模式
             Row() {
-              if (this.viewModel.isLoginMode) {
+              if (this.isLoginMode) {
                 Text('忘记密码？')
                   .fontSize(14)
                   .fontColor('#00BCD4')
                   .onClick(() => this.navigateToForgotPassword())
               }
               Blank()
-              Text(this.viewModel.isLoginMode ? '没有账号？去注册' : '已有账号？去登录')
+              Text(this.isLoginMode ? '没有账号？去注册' : '已有账号？去登录')
                 .fontSize(14)
                 .fontColor('#00BCD4')
-                .onClick(() => this.viewModel.toggleMode())
+                .onClick(() => this.toggleMode())
             }
             .width('100%')
             .margin({ top: 16 })
@@ -220,7 +265,7 @@ struct LoginPage {
       .padding({ left: 16, right: 16 })
       .margin({ bottom: 16 })
       .onChange((value: string) => {
-        this.viewModel.loginName = value
+        this.loginName = value
       })
 
     TextInput({ placeholder: '请输入密码' })
@@ -232,10 +277,10 @@ struct LoginPage {
       .type(InputType.Password)
       .margin({ bottom: 16 })
       .onChange((value: string) => {
-        this.viewModel.password = value
+        this.password = value
       })
 
-    if (this.viewModel.biometricAvailable) {
+    if (this.biometricAvailable) {
       Button('使用生物识别登录')
         .width('100%')
         .height(44)
@@ -306,7 +351,7 @@ struct LoginPage {
       .type(InputType.Password)
       .margin({ bottom: 16 })
       .onChange((value: string) => {
-        this.viewModel.password = value
+        this.password = value
       })
   }
 }

@@ -4,9 +4,10 @@
 
 import { getLogger } from '../utils/Logger.ets'
 import AuthService from '../services/auth/AuthService.ets'
-import { LoginRequest } from '../models/ApiModels.ets'
-import { FormValidator } from '../utils/FormValidator.ets'
-import ToastHelper from '../components/common/ToastDialog.ets'
+import { LoginRequest, RegisterRequest } from '../models/ApiModels.ets'
+import { FormValidator, ValidationResult } from '../utils/FormValidator.ets'
+import { ToastHelper } from '../components/common/ToastDialog.ets'
+import { BiometricHelper } from '../utils/BiometricHelper.ets'
 
 const logger = getLogger('LoginViewModel')
 
@@ -17,50 +18,56 @@ export enum LoginState {
   ERROR = 'error'
 }
 
-@Observed
 export class LoginViewModel {
-  @State loginName: string = ''
-  @State password: string = ''
-  @State isLoginMode: boolean = true
-  @State loginState: LoginState = LoginState.IDLE
-  @State errorMessage: string = ''
-  @State biometricAvailable: boolean = false
+  loginName: string = ''
+  password: string = ''
+  isLoginMode: boolean = true
+  loginState: LoginState = LoginState.IDLE
+  errorMessage: string = ''
+  biometricAvailable: boolean = false
 
-  private authService: AuthService = AuthService
-
-  aboutToAppear() {
+  aboutToAppear(): void {
     logger.info('LoginViewModel aboutToAppear')
     this.checkBiometricAvailability()
   }
 
   async checkBiometricAvailability(): Promise<void> {
     try {
-      const BiometricHelper = await import('../utils/BiometricHelper.ets')
-      this.biometricAvailable = await BiometricHelper.default.isBiometricSupported()
+      const biometricHelper = BiometricHelper.getInstance()
+      this.biometricAvailable = await biometricHelper.isBiometricSupported()
     } catch {
       this.biometricAvailable = false
     }
   }
 
-  async login(): Promise<boolean> {
-    const validation = FormValidator.validateLogin(this.loginName, this.password)
+  async login(loginName: string, password: string): Promise<boolean> {
+    logger.info(`login called with: ${loginName}`)
+    const validation: ValidationResult = FormValidator.validateLogin(loginName, password)
     if (!validation.valid) {
+      logger.warn(`Validation failed: ${validation.error}`)
       this.errorMessage = validation.error
       ToastHelper.showShort(validation.error)
       return false
     }
 
+    logger.info('Setting state to LOADING')
     this.loginState = LoginState.LOADING
     this.errorMessage = ''
 
     try {
-      const request = new LoginRequest(this.loginName.trim(), this.password)
-      await this.authService.login(request)
+      logger.info('Creating LoginRequest and calling AuthService.login()')
+      const request = new LoginRequest(loginName.trim(), password)
+      logger.info(`LoginRequest created: ${JSON.stringify(request)}`)
+      const success: boolean = await AuthService.login(request)
+      logger.info(`AuthService.login() returned: ${success}`)
       this.loginState = LoginState.SUCCESS
-      return true
+      logger.info('Login successful, returning true')
+      return success
     } catch (error) {
+      logger.error(`Login caught error: ${JSON.stringify(error)}`)
       this.loginState = LoginState.ERROR
       const message = error instanceof Error ? error.message : '登录失败'
+      logger.error(`Error message: ${message}`)
       this.errorMessage = message
       ToastHelper.showShort(message)
       return false
@@ -68,7 +75,7 @@ export class LoginViewModel {
   }
 
   async register(username: string, email: string, password: string, code: string): Promise<boolean> {
-    const validation = FormValidator.validateRegister(username, email, password, code)
+    const validation: ValidationResult = FormValidator.validateRegister(username, email, password, code)
     if (!validation.valid) {
       this.errorMessage = validation.error
       ToastHelper.showShort(validation.error)
@@ -79,14 +86,9 @@ export class LoginViewModel {
     this.errorMessage = ''
 
     try {
-      await this.authService.register({
-        username: username.trim(),
-        email: email.trim(),
-        password: password,
-        verificationCode: code.trim()
-      })
+      const success: boolean = await AuthService.register(new RegisterRequest(username.trim(), email.trim(), password, code.trim()))
       this.loginState = LoginState.SUCCESS
-      return true
+      return success
     } catch (error) {
       this.loginState = LoginState.ERROR
       const message = error instanceof Error ? error.message : '注册失败'
@@ -107,9 +109,11 @@ export class LoginViewModel {
     }
 
     try {
-      await this.authService.sendCode(email.trim(), type, username.trim() || null)
-      ToastHelper.showShort('验证码已发送')
-      return true
+      const success: boolean = await AuthService.sendCode(email.trim(), type, username.trim() || null)
+      if (success) {
+        ToastHelper.showShort('验证码已发送')
+      }
+      return success
     } catch (error) {
       const message = error instanceof Error ? error.message : '发送验证码失败'
       ToastHelper.showShort(message)

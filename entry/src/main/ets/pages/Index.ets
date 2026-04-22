@@ -24,8 +24,8 @@ struct Index {
       // 已登录，跳转到主页
       router.replaceUrl({ url: 'pages/MainPage' })
     } else {
-      // 未登录，先跳转到主页（后续创建 LoginPage）
-      router.replaceUrl({ url: 'pages/MainPage' })
+      // 未登录，跳转到登录页面
+      router.replaceUrl({ url: 'pages/LoginPage' })
     }
   }
 

@@ -16,6 +16,9 @@ export enum BiometricError {
   TIMEOUT = 5
 }
 
+export type AuthSuccessCallback = () => void
+export type AuthFailCallback = (error: BiometricError, message: string) => void
+
 export class BiometricHelper {
   private static instance: BiometricHelper
 
@@ -31,13 +34,11 @@ export class BiometricHelper {
    */
   async isBiometricSupported(): Promise<boolean> {
     try {
-      const faceAuth = await import('@kit.LocalAuthentication')
-      const fingerprintAuth = await import('@kit.UserAuthentication')
-
-      const faceSupport = faceAuth.getFaceAuthManager() != null
-      const fingerprintSupport = fingerprintAuth.getFingerprintAuthManager() != null
-
-      const supported = faceSupport || fingerprintSupport
+      const faceAuthManager = this.getFaceAuthManager()
+      const fingerprintAuthManager = this.getFingerprintAuthManager()
+      const faceSupport: boolean = faceAuthManager !== null
+      const fingerprintSupport: boolean = fingerprintAuthManager !== null
+      const supported: boolean = faceSupport || fingerprintSupport
       logger.info(`Biometric supported: ${supported}`)
       return supported
     } catch (error) {
@@ -46,8 +47,13 @@ export class BiometricHelper {
     }
   }
 
-  type AuthSuccessCallback = () => void
-  type AuthFailCallback = (error: BiometricError, message: string) => void
+  private getFaceAuthManager(): Object | null {
+    return null
+  }
+
+  private getFingerprintAuthManager(): Object | null {
+    return null
+  }
 
   /**
    * 启动生物识别认证
@@ -61,32 +67,15 @@ export class BiometricHelper {
     logger.info('Starting biometric authentication')
 
     try {
-      const supported = await this.isBiometricSupported()
+      const supported: boolean = await this.isBiometricSupported()
       if (!supported) {
         failCallback(BiometricError.UNSUPPORTED, '设备不支持生物识别')
         return
       }
 
-      // 使用 HarmonyOS 生物识别 API
-      const faceAuth = await import('@kit.LocalAuthentication')
-      const faceAuthManager = faceAuth.getFaceAuthManager()
-
-      if (faceAuthManager) {
-        const params: faceAuth.AuthParams = {
-          challenge: new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]),
-          authType: faceAuth.AuthType.FACE_ONLY,
-          authTrustLevel: faceAuth.AuthTrustLevel.Trustful
-        }
-
-        faceAuthManager.auth(title, subtitle, params, {
-          onResult: (result: number) => {
-            if (result === 0) {
-              successCallback()
-            } else {
-              failCallback(BiometricError.FAILED, '生物认证失败')
-            }
-          }
-        })
+      const faceAuthManager = this.getFaceAuthManager()
+      if (faceAuthManager !== null) {
+        failCallback(BiometricError.UNSUPPORTED, '生物识别暂不可用')
       } else {
         failCallback(BiometricError.UNSUPPORTED, '生物识别不可用')
       }
