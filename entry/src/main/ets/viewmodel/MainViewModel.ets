@@ -69,7 +69,7 @@ export class MainViewModel {
       const emailVal: string = (profile.email ?? '') as string
       const tier: string = (profile.membership_tier ?? 'normal') as string
       const expiresAt: number = profile.membership_expires_at
-        ? new Date(profile.membership_expires_at).getTime()
+        ? new Date(profile.membership_expires_at as string).getTime()
         : 0
 
       this.username = nickname
