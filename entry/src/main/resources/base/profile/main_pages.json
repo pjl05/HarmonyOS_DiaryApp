@@ -3,6 +3,11 @@
     "pages/Index",
     "pages/LoginPage",
     "pages/ForgotPasswordPage",
-    "pages/MainPage"
+    "pages/MainPage",
+    "pages/diary/DiaryEditPage",
+    "pages/diary/DiaryViewPage",
+    "pages/diary/FavoritesPage",
+    "pages/diary/DraftsPage",
+    "pages/diary/RecycleBinPage"
   ]
 }
