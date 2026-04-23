@@ -3,6 +3,10 @@
     "pages/Index",
     "pages/LoginPage",
     "pages/ForgotPasswordPage",
-    "pages/MainPage"
+    "pages/MainPage",
+    "pages/diary/DiaryPagerPage",
+    "pages/schedule/SchedulePagerPage",
+    "pages/day/DayPagerPage",
+    "pages/calendar/CalendarPage"
   ]
 }
