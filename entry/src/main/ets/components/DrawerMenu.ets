@@ -36,7 +36,7 @@ export struct DrawerMenu {
       // 抽屉头部
       Stack({ alignContent: Alignment.BottomStart }) {
         // 背景图
-        Image($r('app.media.bg_default_world'))
+        Image($r('app.media.background'))
           .width('100%')
           .height(180)
           .objectFit(ImageFit.Cover)

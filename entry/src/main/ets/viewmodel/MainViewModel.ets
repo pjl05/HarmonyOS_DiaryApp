@@ -65,9 +65,9 @@ export class MainViewModel {
       if (!data.success || !data.data) return
 
       const profile = data.data as Record<string, Object>
-      const nickname: string = profile.nickname ?? profile.username ?? ''
-      const emailVal: string = profile.email ?? ''
-      const tier: string = profile.membership_tier ?? 'normal'
+      const nickname: string = (profile.nickname ?? profile.username ?? '') as string
+      const emailVal: string = (profile.email ?? '') as string
+      const tier: string = (profile.membership_tier ?? 'normal') as string
       const expiresAt: number = profile.membership_expires_at
         ? new Date(profile.membership_expires_at).getTime()
         : 0

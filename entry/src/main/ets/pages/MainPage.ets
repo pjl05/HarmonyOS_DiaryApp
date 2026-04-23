@@ -256,7 +256,7 @@ struct MainPage {
           onChatClick: () => {
             promptAction.showToast({ message: 'AI 聊天（Day 8-9 实现）' })
           },
-          onNewClick: () => this.handleNewClick(),
+          onNewClick: (): void => { this.handleNewClick() },
           onProfileClick: () => {
             promptAction.showToast({ message: '个人中心（Day 13 实现）' })
           }
@@ -285,7 +285,7 @@ struct MainPage {
           email: this.email,
           avatarUri: this.avatarUri,
           isDarkMode: this.isDarkMode,
-          onItemClick: (id: string) => this.handleDrawerItemClick(id),
+          onItemClick: (id: string): void => { this.handleDrawerItemClick(id) },
           onAvatarClick: () => {
             promptAction.showToast({ message: '头像选择（Day 13 实现）' })
           },
