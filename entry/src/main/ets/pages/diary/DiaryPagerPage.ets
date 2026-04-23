@@ -62,7 +62,8 @@ export struct DiaryPagerPage {
       { text: '移动到保险箱', color: '#2196F3' },
       { text: '取消', color: '#999999' }
     ]
-    const buttons: MenuActionType[] = menuActions.map(a => ({ text: a.text, color: a.color }))
+    promptAction.showActionMenu({
+      buttons: menuActions.map(a => ({ text: a.text, color: a.color }))
     }).then((result) => {
       const idx = result.index
       if (idx === 0) {

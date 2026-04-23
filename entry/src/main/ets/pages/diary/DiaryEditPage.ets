@@ -92,7 +92,7 @@ struct DiaryEditPage {
         Text('取消')
           .fontSize(16)
           .fontColor('#666666')
-          .onClick((): void => { router.pop() })
+          .onClick((): void => { router.back() })
 
         Blank()
 
