@@ -52,7 +52,7 @@ export struct MoodPicker {
   }
 
   private getMoodEmoji(id: string): string {
-    const map: Record<string, string> = {
+    const map: EmojiMap = {
       happy: '😊', neutral: '😐', sad: '😢', angry: '😠', worried: '😰', excited: '🤩'
     }
     return map[id] ?? '😐'
@@ -62,4 +62,8 @@ export struct MoodPicker {
 interface MoodItem {
   id: string
   label: string
+}
+
+interface EmojiMap {
+  [key: string]: string
 }

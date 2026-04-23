@@ -7,6 +7,7 @@ import { DiaryViewModel } from '../../viewmodel/DiaryViewModel'
 import { DiaryCard, DiaryWrapper } from '../../components/DiaryCard'
 import promptAction from '@ohos.promptAction'
 
+@Entry
 @Component
 export struct FavoritesPage {
   @State diaries: DiaryWrapper[] = []
@@ -69,7 +70,7 @@ export struct FavoritesPage {
             ListItem() {
               DiaryCard({
                 diaryWrapper: item,
-                onClick: (): void => {
+                onCardClick: (): void => {
                   router.pushUrl({
                     url: 'pages/diary/DiaryViewPage',
                     params: { diaryId: item.diary.id }

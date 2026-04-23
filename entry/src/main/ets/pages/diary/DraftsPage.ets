@@ -7,6 +7,7 @@ import { DiaryRepository } from '../../repository/DiaryRepository'
 import { DraftDiary } from '../../model/DraftDiaryModel'
 import promptAction from '@ohos.promptAction'
 
+@Entry
 @Component
 export struct DraftsPage {
   @State drafts: DraftDiary[] = []
@@ -30,6 +31,21 @@ export struct DraftsPage {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   }
 
+  private showDraftMenu(draft: DraftDiary): void {
+    promptAction.showActionMenu({
+      buttons: [
+        { text: '删除草稿', color: '#F44336' },
+        { text: '取消', color: '#999999' }
+      ]
+    }).then(async (result): Promise<void> => {
+      if (result.index === 0 && this.repo) {
+        await this.repo.deleteDraft(draft.id)
+        this.loadDrafts()
+        promptAction.showToast({ message: '草稿已删除' })
+      }
+    }).catch((): void => {})
+  }
+
   @Builder
   EmptyView() {
     Column({ space: 16 }) {
@@ -43,6 +59,49 @@ export struct DraftsPage {
     .width('100%')
     .height('100%')
     .justifyContent(FlexAlign.Center)
+  }
+
+  @Builder
+  buildDraftItem(draft: DraftDiary) {
+    Column({ space: 8 }) {
+      Row() {
+        Text(this.formatDate(draft.date))
+          .fontSize(12)
+          .fontColor('#999999')
+        Blank()
+        Text('草稿')
+          .fontSize(11)
+          .fontColor('#FF9800')
+          .backgroundColor('#FFF3E0')
+          .padding({ left: 8, right: 8, top: 2, bottom: 2 })
+          .borderRadius(8)
+      }
+      Text(draft.title || '(无标题)')
+        .fontSize(15)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#222222')
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+      Text(draft.content.replace(/<[^>]*>/g, '').trim())
+        .fontSize(13)
+        .fontColor('#888888')
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+    }
+    .width('100%')
+    .padding(16)
+    .backgroundColor('#FFFFFF')
+    .borderRadius(12)
+    .shadow({ radius: 4, color: '#10000000', offsetX: 0, offsetY: 2 })
+    .onClick((): void => {
+      router.pushUrl({
+        url: 'pages/diary/DiaryEditPage',
+        params: { draftId: draft.id }
+      }).catch((): void => {})
+    })
+    .onLongPress((): void => {
+      this.showDraftMenu(draft)
+    })
   }
 
   build() {
@@ -72,56 +131,7 @@ export struct DraftsPage {
         List({ space: 10 }) {
           ForEach(this.drafts, (draft: DraftDiary) => {
             ListItem() {
-              Column({ space: 8 }) {
-                Row() {
-                  Text(this.formatDate(draft.date))
-                    .fontSize(12)
-                    .fontColor('#999999')
-                  Blank()
-                  Text('草稿')
-                    .fontSize(11)
-                    .fontColor('#FF9800')
-                    .backgroundColor('#FFF3E0')
-                    .padding({ left: 8, right: 8, top: 2, bottom: 2 })
-                    .borderRadius(8)
-                }
-                Text(draft.title || '(无标题)')
-                  .fontSize(15)
-                  .fontWeight(FontWeight.Medium)
-                  .fontColor('#222222')
-                  .maxLines(1)
-                  .textOverflow({ overflow: TextOverflow.Ellipsis })
-                Text(draft.content.replace(/<[^>]*>/g, '').trim())
-                  .fontSize(13)
-                  .fontColor('#888888')
-                  .maxLines(2)
-                  .textOverflow({ overflow: TextOverflow.Ellipsis })
-              }
-              .width('100%')
-              .padding(16)
-              .backgroundColor('#FFFFFF')
-              .borderRadius(12)
-              .shadow({ radius: 4, color: '#10000000', offsetX: 0, offsetY: 2 })
-              .onClick((): void => {
-                router.pushUrl({
-                  url: 'pages/diary/DiaryEditPage',
-                  params: { draftId: draft.id }
-                }).catch((): void => {})
-              })
-              .onLongPress((): void => {
-                promptAction.showActionMenu({
-                  buttons: [
-                    { text: '删除草稿', color: '#F44336' },
-                    { text: '取消', color: '#999999' }
-                  ]
-                }).then(async (result): Promise<void> => {
-                  if (result.index === 0 && this.repo) {
-                    await this.repo.deleteDraft(draft.id)
-                    this.loadDrafts()
-                    promptAction.showToast({ message: '草稿已删除' })
-                  }
-                }).catch((): void => {})
-              })
+              this.buildDraftItem(draft)
             }
             .padding({ left: 16, right: 16, top: 6 })
           })

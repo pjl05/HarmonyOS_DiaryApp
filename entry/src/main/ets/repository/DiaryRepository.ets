@@ -108,7 +108,7 @@ export class DiaryRepository {
     }
     const predicates = new relationalStore.RdbPredicates('diaries')
     predicates.equalTo('id', diary.id)
-    await store.update('diaries', bucket, predicates)
+    await store.update(bucket, predicates)
   }
 
   async delete(diary: Diary): Promise<void> {
@@ -290,7 +290,7 @@ export class DiaryRepository {
     if (draft.id > 0) {
       const pred = new relationalStore.RdbPredicates('draft_diaries')
       pred.equalTo('id', draft.id)
-      await store.update('draft_diaries', bucket, pred)
+      await store.update(bucket, pred)
       return draft.id
     } else {
       return await store.insert('draft_diaries', bucket)

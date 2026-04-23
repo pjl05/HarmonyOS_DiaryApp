@@ -8,7 +8,7 @@ import promptAction from '@ohos.promptAction'
 import { DiaryEditViewModel } from '../../viewmodel/DiaryEditViewModel'
 import { WeatherPicker } from '../../components/WeatherPicker'
 import { MoodPicker } from '../../components/MoodPicker'
-import { Logger } from '../../utils/Logger'
+import { getLogger } from '../../utils/Logger'
 
 @Entry
 @Component

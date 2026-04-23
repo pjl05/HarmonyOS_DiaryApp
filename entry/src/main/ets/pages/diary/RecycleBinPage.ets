@@ -7,6 +7,7 @@ import { DiaryRepository } from '../../repository/DiaryRepository'
 import { Diary } from '../../model/DiaryModel'
 import promptAction from '@ohos.promptAction'
 
+@Entry
 @Component
 export struct RecycleBinPage {
   @State trashedDiaries: Diary[] = []
@@ -30,6 +31,46 @@ export struct RecycleBinPage {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   }
 
+  private showTrashMenu(diary: Diary): void {
+    promptAction.showActionMenu({
+      buttons: [
+        { text: '恢复', color: '#4CAF50' },
+        { text: '永久删除', color: '#F44336' },
+        { text: '取消', color: '#999999' }
+      ]
+    }).then(async (result): Promise<void> => {
+      if (!this.repo) return
+      if (result.index === 0) {
+        await this.repo.restoreFromTrash(diary)
+        this.loadTrash()
+        promptAction.showToast({ message: '已恢复' })
+      } else if (result.index === 1) {
+        await this.repo.delete(diary)
+        this.loadTrash()
+        promptAction.showToast({ message: '已永久删除' })
+      }
+    }).catch((): void => {})
+  }
+
+  private clearTrash(): void {
+    promptAction.showDialog({
+      title: '确认清空',
+      message: '回收站中的日记将被永久删除，是否继续？',
+      buttons: [
+        { text: '取消', color: '#999999' },
+        { text: '清空', color: '#F44336' }
+      ]
+    }).then(async (result): Promise<void> => {
+      if (result.index === 1 && this.repo) {
+        for (const d of this.trashedDiaries) {
+          await this.repo.delete(d)
+        }
+        this.loadTrash()
+        promptAction.showToast({ message: '已清空回收站' })
+      }
+    }).catch((): void => {})
+  }
+
   @Builder
   EmptyView() {
     Column({ space: 16 }) {
@@ -43,6 +84,44 @@ export struct RecycleBinPage {
     .width('100%')
     .height('100%')
     .justifyContent(FlexAlign.Center)
+  }
+
+  @Builder
+  buildTrashItem(diary: Diary) {
+    Column({ space: 8 }) {
+      Row() {
+        Text(this.formatDate(diary.date))
+          .fontSize(12)
+          .fontColor('#999999')
+        Blank()
+        Text('回收站')
+          .fontSize(11)
+          .fontColor('#F44336')
+          .backgroundColor('#FFEBEE')
+          .padding({ left: 8, right: 8, top: 2, bottom: 2 })
+          .borderRadius(8)
+      }
+      Text(diary.title || '(无标题)')
+        .fontSize(15)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#222222')
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+    }
+    .width('100%')
+    .padding(16)
+    .backgroundColor('#FFFFFF')
+    .borderRadius(12)
+    .shadow({ radius: 4, color: '#10000000', offsetX: 0, offsetY: 2 })
+    .onClick((): void => {
+      router.pushUrl({
+        url: 'pages/diary/DiaryViewPage',
+        params: { diaryId: diary.id }
+      }).catch((): void => {})
+    })
+    .onLongPress((): void => {
+      this.showTrashMenu(diary)
+    })
   }
 
   build() {
@@ -63,24 +142,7 @@ export struct RecycleBinPage {
           Text('清空')
             .fontSize(14)
             .fontColor('#F44336')
-            .onClick((): void => {
-              promptAction.showDialog({
-                title: '确认清空',
-                message: '回收站中的日记将被永久删除，是否继续？',
-                buttons: [
-                  { text: '取消', color: '#999999' },
-                  { text: '清空', color: '#F44336' }
-                ]
-              }).then(async (result): Promise<void> => {
-                if (result.index === 1 && this.repo) {
-                  for (const d of this.trashedDiaries) {
-                    await this.repo.delete(d)
-                  }
-                  this.loadTrash()
-                  promptAction.showToast({ message: '已清空回收站' })
-                }
-              }).catch((): void => {})
-            })
+            .onClick((): void => { this.clearTrash() })
         }
       }
       .width('100%')
@@ -96,57 +158,7 @@ export struct RecycleBinPage {
         List({ space: 10 }) {
           ForEach(this.trashedDiaries, (diary: Diary) => {
             ListItem() {
-              Column({ space: 8 }) {
-                Row() {
-                  Text(this.formatDate(diary.date))
-                    .fontSize(12)
-                    .fontColor('#999999')
-                  Blank()
-                  Text('回收站')
-                    .fontSize(11)
-                    .fontColor('#F44336')
-                    .backgroundColor('#FFEBEE')
-                    .padding({ left: 8, right: 8, top: 2, bottom: 2 })
-                    .borderRadius(8)
-                }
-                Text(diary.title || '(无标题)')
-                  .fontSize(15)
-                  .fontWeight(FontWeight.Medium)
-                  .fontColor('#222222')
-                  .maxLines(1)
-                  .textOverflow({ overflow: TextOverflow.Ellipsis })
-              }
-              .width('100%')
-              .padding(16)
-              .backgroundColor('#FFFFFF')
-              .borderRadius(12)
-              .shadow({ radius: 4, color: '#10000000', offsetX: 0, offsetY: 2 })
-              .onClick((): void => {
-                router.pushUrl({
-                  url: 'pages/diary/DiaryViewPage',
-                  params: { diaryId: diary.id }
-                }).catch((): void => {})
-              })
-              .onLongPress((): void => {
-                promptAction.showActionMenu({
-                  buttons: [
-                    { text: '恢复', color: '#4CAF50' },
-                    { text: '永久删除', color: '#F44336' },
-                    { text: '取消', color: '#999999' }
-                  ]
-                }).then(async (result): Promise<void> => {
-                  if (!this.repo) return
-                  if (result.index === 0) {
-                    await this.repo.restoreFromTrash(diary)
-                    this.loadTrash()
-                    promptAction.showToast({ message: '已恢复' })
-                  } else if (result.index === 1) {
-                    await this.repo.delete(diary)
-                    this.loadTrash()
-                    promptAction.showToast({ message: '已永久删除' })
-                  }
-                }).catch((): void => {})
-              })
+              this.buildTrashItem(diary)
             }
             .padding({ left: 16, right: 16, top: 6 })
           })

@@ -11,6 +11,14 @@ import { getLogger } from '../../utils/Logger'
 
 const logger = getLogger('DiaryViewPage')
 
+interface EmojiMap {
+  [key: string]: string
+}
+
+interface LabelMap {
+  [key: string]: string
+}
+
 @Entry
 @Component
 struct DiaryViewPage {
@@ -170,22 +178,22 @@ struct DiaryViewPage {
   }
 
   private getWeatherEmoji(w: string): string {
-    const map: Record<string, string> = { sunny: '☀️', cloudy: '⛅', rainy: '🌧️', snowy: '❄️', windy: '💨', foggy: '🌫️' }
+    const map: EmojiMap = { sunny: '☀️', cloudy: '⛅', rainy: '🌧️', snowy: '❄️', windy: '💨', foggy: '🌫️' }
     return map[w] ?? '☀️'
   }
 
   private getWeatherLabel(w: string): string {
-    const map: Record<string, string> = { sunny: '晴', cloudy: '多云', rainy: '雨', snowy: '雪', windy: '风', foggy: '雾' }
+    const map: LabelMap = { sunny: '晴', cloudy: '多云', rainy: '雨', snowy: '雪', windy: '风', foggy: '雾' }
     return map[w] ?? '晴'
   }
 
   private getMoodEmoji(m: string): string {
-    const map: Record<string, string> = { happy: '😊', neutral: '😐', sad: '😢', angry: '😠', worried: '😰', excited: '🤩' }
+    const map: EmojiMap = { happy: '😊', neutral: '😐', sad: '😢', angry: '😠', worried: '😰', excited: '🤩' }
     return map[m] ?? '😐'
   }
 
   private getMoodLabel(m: string): string {
-    const map: Record<string, string> = { happy: '开心', neutral: '平静', sad: '难过', angry: '生气', worried: '担心', excited: '兴奋' }
+    const map: LabelMap = { happy: '开心', neutral: '平静', sad: '难过', angry: '生气', worried: '担心', excited: '兴奋' }
     return map[m] ?? '平静'
   }
 }

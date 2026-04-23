@@ -17,6 +17,12 @@ export class DiaryWrapper {
   }
 }
 
+interface ClickHandlers {
+  onCardClick: () => void
+  onFavoriteClick: () => void
+  onCardLongPress: () => void
+}
+
 @Component
 export struct DiaryCard {
   @ObjectLink diaryWrapper: DiaryWrapper
@@ -40,57 +46,74 @@ export struct DiaryCard {
 
   build() {
     Column() {
-      Row() {
-        Text(this.formatDate(this.diaryWrapper.diary.date))
-          .fontSize(12)
-          .fontColor('#999999')
-        Blank()
-        Row({ space: 8 }) {
-          Text(this.getWeatherLabel(this.diaryWrapper.diary.weather))
-            .fontSize(11)
-            .fontColor('#888888')
-          Text(' ')
-          Text(this.getMoodLabel(this.diaryWrapper.diary.mood))
-            .fontSize(11)
-            .fontColor('#888888')
-        }
-      }
-      .width('100%')
-
-      Text(this.diaryWrapper.diary.title || '(无标题)')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-        .fontColor('#222222')
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .margin({ top: 8 })
-
-      if (this.getPreviewText()) {
-        Text(this.getPreviewText())
-          .fontSize(13)
-          .fontColor('#666666')
-          .maxLines(2)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .margin({ top: 4 })
-      }
-
-      Row() {
-        Blank()
-        Text(this.diaryWrapper.diary.isFavorite ? '♥' : '♡')
-          .fontSize(18)
-          .fontColor(this.diaryWrapper.diary.isFavorite ? '#FF5722' : '#BBBBBB')
-          .onClick(() => this.onFavoriteClick())
-      }
-      .width('100%')
-      .margin({ top: 8 })
-      .onClick(() => this.onCardClick())
-      .onLongPress(() => this.onCardLongPress())
+      this.buildHeader()
+      this.buildTitle()
+      this.buildPreview()
+      this.buildFavoriteRow()
     }
     .width('100%')
     .padding(16)
     .backgroundColor('#FFFFFF')
     .borderRadius(12)
     .shadow({ radius: 6, color: '#15000000', offsetX: 0, offsetY: 2 })
+    .onClick(() => this.onCardClick())
+    .onLongPress(() => this.onCardLongPress())
+  }
+
+  @Builder
+  buildHeader() {
+    Row() {
+      Text(this.formatDate(this.diaryWrapper.diary.date))
+        .fontSize(12)
+        .fontColor('#999999')
+      Blank()
+      Row({ space: 8 }) {
+        Text(this.getWeatherLabel(this.diaryWrapper.diary.weather))
+          .fontSize(11)
+          .fontColor('#888888')
+        Text(' ')
+        Text(this.getMoodLabel(this.diaryWrapper.diary.mood))
+          .fontSize(11)
+          .fontColor('#888888')
+      }
+    }
+    .width('100%')
+  }
+
+  @Builder
+  buildTitle() {
+    Text(this.diaryWrapper.diary.title || '(无标题)')
+      .fontSize(16)
+      .fontWeight(FontWeight.Medium)
+      .fontColor('#222222')
+      .maxLines(1)
+      .textOverflow({ overflow: TextOverflow.Ellipsis })
+      .margin({ top: 8 })
+  }
+
+  @Builder
+  buildPreview() {
+    if (this.getPreviewText()) {
+      Text(this.getPreviewText())
+        .fontSize(13)
+        .fontColor('#666666')
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .margin({ top: 4 })
+    }
+  }
+
+  @Builder
+  buildFavoriteRow() {
+    Row() {
+      Blank()
+      Text(this.diaryWrapper.diary.isFavorite ? '♥' : '♡')
+        .fontSize(18)
+        .fontColor(this.diaryWrapper.diary.isFavorite ? '#FF5722' : '#BBBBBB')
+        .onClick(() => this.onFavoriteClick())
+    }
+    .width('100%')
+    .margin({ top: 8 })
   }
 
   private getWeatherLabel(w: string): string {

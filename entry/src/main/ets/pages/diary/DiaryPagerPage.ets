@@ -12,7 +12,9 @@ import { Diary } from '../../model/DiaryModel'
 
 const logger = getLogger('DiaryPagerPage')
 
-interface MenuActionType {
+type FilterLabel = '全部' | '图片' | '视频'
+
+interface MenuAction {
   text: string
   color: string
 }
@@ -20,7 +22,7 @@ interface MenuActionType {
 @Component
 export struct DiaryPagerPage {
   @State diaries: DiaryWrapper[] = []
-  @State currentFilter: 'all' | 'image' | 'video' = 'all'
+  @State currentFilter: FilterLabel = '全部'
   @State showEmpty: boolean = false
 
   private vm: DiaryViewModel | null = null
@@ -49,22 +51,23 @@ export struct DiaryPagerPage {
     router.pushUrl({
       url: 'pages/diary/DiaryViewPage',
       params: { diaryId: diary.id }
-    }).catch((err) => {
-      logger.error('DiaryPagerPage', 'navigate failed: ' + JSON.stringify(err))
+    }).catch((err: Error) => {
+      logger.error('DiaryPagerPage', 'navigate failed: ' + err.message)
     })
   }
 
   private onDiaryLongPress(diary: Diary): void {
     const isFav = diary.isFavorite
-    const menuActions: MenuActionType[] = [
+    const menuActions: MenuAction[] = [
       { text: isFav ? '取消收藏' : '收藏', color: '#FF9800' },
       { text: '移至回收站', color: '#F44336' },
       { text: '移动到保险箱', color: '#2196F3' },
       { text: '取消', color: '#999999' }
     ]
-    promptAction.showActionMenu({
-      buttons: menuActions.map(a => ({ text: a.text, color: a.color }))
-    }).then((result) => {
+    const buttons: MenuAction[] = menuActions.map((a: MenuAction): MenuAction => {
+      return { text: a.text, color: a.color }
+    })
+    promptAction.showActionMenu({ buttons: buttons }).then((result) => {
       const idx = result.index
       if (idx === 0) {
         this.vm?.toggleFavorite(diary)
@@ -153,12 +156,12 @@ export struct DiaryPagerPage {
   build() {
     Column() {
       Row({ space: 16 }) {
-        ForEach(['全部', '图片', '视频'] as Array<'全部' | '图片' | '视频'>, (label: string) => {
+        ForEach(['全部', '图片', '视频'] as FilterLabel[], (label: FilterLabel) => {
           Text(label)
             .fontSize(14)
             .fontColor(this.currentFilter === label ? '#00BCD4' : '#999999')
             .fontWeight(this.currentFilter === label ? FontWeight.Bold : FontWeight.Normal)
-            .onClick((): void => { this.currentFilter = label as '全部' | '图片' | '视频' })
+            .onClick((): void => { this.currentFilter = label })
         })
       }
       .width('100%')
