@@ -5,7 +5,9 @@
 import { Diary, createEmptyDiary } from '../model/DiaryModel'
 import { DraftDiary, createEmptyDraft } from '../model/DraftDiaryModel'
 import { DiaryRepository } from '../repository/DiaryRepository'
-import { Logger } from '../utils/Logger'
+import { getLogger } from '../utils/Logger'
+
+const logger = getLogger('DiaryEditViewModel')
 
 export class DiaryEditViewModel {
   diary: Diary
@@ -37,7 +39,7 @@ export class DiaryEditViewModel {
         this.isDirty = false
       }
     } catch (err) {
-      Logger.error('DiaryEditViewModel', 'loadDiary failed: ' + JSON.stringify(err))
+      logger.error('DiaryEditViewModel', 'loadDiary failed: ' + JSON.stringify(err))
     }
   }
 
@@ -83,21 +85,28 @@ export class DiaryEditViewModel {
 
   async saveDraft(): Promise<void> {
     try {
-      this.currentDraftId = await this.repository.saveDraft({
-        ...this.draft,
+      const savedDraft: DraftDiary = {
         id: this.currentDraftId,
+        userId: this.draft.userId,
+        title: this.draft.title,
+        content: this.draft.content,
+        mood: this.draft.mood,
+        weather: this.draft.weather,
+        date: this.draft.date,
+        createdAt: this.draft.createdAt,
         updatedAt: Date.now()
-      })
+      }
+      this.currentDraftId = await this.repository.saveDraft(savedDraft)
       this.isDirty = false
-      Logger.info('DiaryEditViewModel', 'draft saved id=' + this.currentDraftId)
+      logger.info('DiaryEditViewModel', 'draft saved id=' + this.currentDraftId)
     } catch (err) {
-      Logger.error('DiaryEditViewModel', 'saveDraft failed: ' + JSON.stringify(err))
+      logger.error('DiaryEditViewModel', 'saveDraft failed: ' + JSON.stringify(err))
     }
   }
 
   async publish(): Promise<boolean> {
     if (!this.diary.title.trim() && !this.diary.content.trim()) {
-      Logger.warn('DiaryEditViewModel', 'cannot publish empty diary')
+      logger.warn('DiaryEditViewModel', 'cannot publish empty diary')
       return false
     }
     try {
@@ -115,7 +124,7 @@ export class DiaryEditViewModel {
       this.isDirty = false
       return true
     } catch (err) {
-      Logger.error('DiaryEditViewModel', 'publish failed: ' + JSON.stringify(err))
+      logger.error('DiaryEditViewModel', 'publish failed: ' + JSON.stringify(err))
       return false
     }
   }
@@ -135,7 +144,7 @@ export class DiaryEditViewModel {
         this.isNew = true
       }
     } catch (err) {
-      Logger.error('DiaryEditViewModel', 'loadFromDraft failed: ' + JSON.stringify(err))
+      logger.error('DiaryEditViewModel', 'loadFromDraft failed: ' + JSON.stringify(err))
     }
   }
 }

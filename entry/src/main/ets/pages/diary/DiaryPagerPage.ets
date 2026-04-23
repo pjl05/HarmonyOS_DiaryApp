@@ -7,7 +7,9 @@ import router from '@ohos.router'
 import { DiaryViewModel } from '../../viewmodel/DiaryViewModel'
 import { DiaryCard, DiaryWrapper } from '../../components/DiaryCard'
 import promptAction from '@ohos.promptAction'
-import { Logger } from '../../utils/Logger'
+import { getLogger } from '../../utils/Logger'
+
+const logger = getLogger('DiaryPagerPage')
 import { Diary } from '../../model/DiaryModel'
 
 @Component
@@ -43,7 +45,7 @@ export struct DiaryPagerPage {
       url: 'pages/diary/DiaryViewPage',
       params: { diaryId: diary.id }
     }).catch((err) => {
-      Logger.error('DiaryPagerPage', 'navigate failed: ' + JSON.stringify(err))
+      logger.error('DiaryPagerPage', 'navigate failed: ' + JSON.stringify(err))
     })
   }
 
@@ -62,7 +64,25 @@ export struct DiaryPagerPage {
         this.vm?.toggleFavorite(diary)
         this.diaries = this.diaries.map(w => {
           if (w.diary.id === diary.id) {
-            w.diary = { ...w.diary, isFavorite: !w.diary.isFavorite }
+            const d = w.diary
+            w.diary = {
+              id: d.id,
+              userId: d.userId,
+              author: d.author,
+              title: d.title,
+              content: d.content,
+              mood: d.mood,
+              weather: d.weather,
+              location: d.location,
+              date: d.date,
+              createdAt: d.createdAt,
+              synced: d.synced,
+              isFavorite: !d.isFavorite,
+              isVaulted: d.isVaulted,
+              isTrashed: d.isTrashed,
+              trashedAt: d.trashedAt,
+              previewContentPriority: d.previewContentPriority
+            }
           }
           return w
         })
@@ -82,7 +102,25 @@ export struct DiaryPagerPage {
     this.vm?.toggleFavorite(diary)
     this.diaries = this.diaries.map(w => {
       if (w.diary.id === diary.id) {
-        w.diary = { ...w.diary, isFavorite: !w.diary.isFavorite }
+        const d = w.diary
+        w.diary = {
+          id: d.id,
+          userId: d.userId,
+          author: d.author,
+          title: d.title,
+          content: d.content,
+          mood: d.mood,
+          weather: d.weather,
+          location: d.location,
+          date: d.date,
+          createdAt: d.createdAt,
+          synced: d.synced,
+          isFavorite: !d.isFavorite,
+          isVaulted: d.isVaulted,
+          isTrashed: d.isTrashed,
+          trashedAt: d.trashedAt,
+          previewContentPriority: d.previewContentPriority
+        }
       }
       return w
     })

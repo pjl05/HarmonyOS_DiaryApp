@@ -46,7 +46,7 @@ export struct FavoritesPage {
         Text('←')
           .fontSize(22)
           .fontColor('#333333')
-          .onClick((): void => { router.pop() })
+          .onClick((): void => { router.back() })
         Text('收藏')
           .fontSize(17)
           .fontWeight(FontWeight.Medium)

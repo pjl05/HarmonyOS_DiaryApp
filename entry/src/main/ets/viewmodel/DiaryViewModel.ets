@@ -4,7 +4,9 @@
  */
 import { Diary, isSystemDiaryContent } from '../model/DiaryModel'
 import { DiaryRepository } from '../repository/DiaryRepository'
-import { Logger } from '../utils/Logger'
+import { getLogger } from '../utils/Logger'
+
+const logger = getLogger('DiaryViewModel')
 
 export class DiaryViewModel {
   diaries: Diary[] = []
@@ -26,7 +28,7 @@ export class DiaryViewModel {
     try {
       this.diaries = await this.repository.allDiaries()
     } catch (err) {
-      Logger.error('DiaryViewModel', 'loadAll failed: ' + JSON.stringify(err))
+      logger.error('DiaryViewModel', 'loadAll failed: ' + JSON.stringify(err))
     } finally {
       this.isLoading = false
     }
@@ -36,7 +38,7 @@ export class DiaryViewModel {
     try {
       this.favoriteDiaries = await this.repository.favoriteDiaries()
     } catch (err) {
-      Logger.error('DiaryViewModel', 'loadFavorites failed: ' + JSON.stringify(err))
+      logger.error('DiaryViewModel', 'loadFavorites failed: ' + JSON.stringify(err))
     }
   }
 
@@ -53,7 +55,7 @@ export class DiaryViewModel {
     try {
       this.diaries = await this.repository.searchDiaries(query)
     } catch (err) {
-      Logger.error('DiaryViewModel', 'search failed: ' + JSON.stringify(err))
+      logger.error('DiaryViewModel', 'search failed: ' + JSON.stringify(err))
     }
   }
 
@@ -71,7 +73,7 @@ export class DiaryViewModel {
       await this.repository.delete(diary)
       this.diaries = this.diaries.filter(d => d.id !== diary.id)
     } catch (err) {
-      Logger.error('DiaryViewModel', 'deleteDiary failed: ' + JSON.stringify(err))
+      logger.error('DiaryViewModel', 'deleteDiary failed: ' + JSON.stringify(err))
     }
   }
 
@@ -84,7 +86,7 @@ export class DiaryViewModel {
         this.diaries = this.diaries.map(d => d.id === diary.id ? updated : d)
       }
     } catch (err) {
-      Logger.error('DiaryViewModel', 'toggleFavorite failed: ' + JSON.stringify(err))
+      logger.error('DiaryViewModel', 'toggleFavorite failed: ' + JSON.stringify(err))
     }
   }
 
@@ -94,7 +96,7 @@ export class DiaryViewModel {
       await this.repository.moveToVault(diary)
       this.diaries = this.diaries.filter(d => d.id !== diary.id)
     } catch (err) {
-      Logger.error('DiaryViewModel', 'moveToVault failed: ' + JSON.stringify(err))
+      logger.error('DiaryViewModel', 'moveToVault failed: ' + JSON.stringify(err))
     }
   }
 
@@ -104,7 +106,7 @@ export class DiaryViewModel {
       await this.repository.moveToTrash(diary)
       this.diaries = this.diaries.filter(d => d.id !== diary.id)
     } catch (err) {
-      Logger.error('DiaryViewModel', 'moveToTrash failed: ' + JSON.stringify(err))
+      logger.error('DiaryViewModel', 'moveToTrash failed: ' + JSON.stringify(err))
     }
   }
 }

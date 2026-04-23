@@ -7,7 +7,9 @@ import router from '@ohos.router'
 import promptAction from '@ohos.promptAction'
 import { DiaryRepository } from '../../repository/DiaryRepository'
 import { Diary } from '../../model/DiaryModel'
-import { Logger } from '../../utils/Logger'
+import { getLogger } from '../../utils/Logger'
+
+const logger = getLogger('DiaryViewPage')
 
 @Entry
 @Component
@@ -24,7 +26,7 @@ struct DiaryViewPage {
 
     if (this.diaryId <= 0) {
       promptAction.showToast({ message: '日记不存在' })
-      router.pop()
+      router.back()
       return
     }
 
@@ -34,7 +36,7 @@ struct DiaryViewPage {
 
     if (!this.diary) {
       promptAction.showToast({ message: '日记不存在' })
-      router.pop()
+      router.back()
     }
   }
 
@@ -71,7 +73,7 @@ struct DiaryViewPage {
         case 2:
           await this.repo.moveToTrash(this.diary)
           promptAction.showToast({ message: '已移至回收站' })
-          router.pop()
+          router.back()
           break
       }
     }).catch((): void => {})
@@ -83,7 +85,7 @@ struct DiaryViewPage {
         Text('←')
           .fontSize(22)
           .fontColor('#333333')
-          .onClick((): void => { router.pop() })
+          .onClick((): void => { router.back() })
         Blank()
         Text('⋮')
           .fontSize(22)

@@ -79,7 +79,7 @@ struct DiaryEditPage {
       const success = await this.vm.publish()
       if (success) {
         promptAction.showToast({ message: '保存成功' })
-        router.pop()
+        router.back()
       } else {
         promptAction.showToast({ message: '标题或内容不能全为空' })
       }

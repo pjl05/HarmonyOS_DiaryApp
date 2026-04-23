@@ -51,7 +51,7 @@ export struct RecycleBinPage {
         Text('←')
           .fontSize(22)
           .fontColor('#333333')
-          .onClick((): void => { router.pop() })
+          .onClick((): void => { router.back() })
         Text('回收站')
           .fontSize(17)
           .fontWeight(FontWeight.Medium)

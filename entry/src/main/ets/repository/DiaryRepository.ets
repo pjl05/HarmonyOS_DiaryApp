@@ -158,7 +158,25 @@ export class DiaryRepository {
   }
 
   async toggleFavorite(diary: Diary): Promise<void> {
-    await this.update({ ...diary, isFavorite: !diary.isFavorite })
+    const updated: Diary = {
+      id: diary.id,
+      userId: diary.userId,
+      author: diary.author,
+      title: diary.title,
+      content: diary.content,
+      mood: diary.mood,
+      weather: diary.weather,
+      location: diary.location,
+      date: diary.date,
+      createdAt: diary.createdAt,
+      synced: diary.synced,
+      isFavorite: !diary.isFavorite,
+      isVaulted: diary.isVaulted,
+      isTrashed: diary.isTrashed,
+      trashedAt: diary.trashedAt,
+      previewContentPriority: diary.previewContentPriority
+    }
+    await this.update(updated)
   }
 
   async trashedDiaries(): Promise<Diary[]> {
@@ -171,15 +189,69 @@ export class DiaryRepository {
   }
 
   async moveToTrash(diary: Diary): Promise<void> {
-    await this.update({ ...diary, isTrashed: true, trashedAt: Date.now() })
+    const updated: Diary = {
+      id: diary.id,
+      userId: diary.userId,
+      author: diary.author,
+      title: diary.title,
+      content: diary.content,
+      mood: diary.mood,
+      weather: diary.weather,
+      location: diary.location,
+      date: diary.date,
+      createdAt: diary.createdAt,
+      synced: diary.synced,
+      isFavorite: diary.isFavorite,
+      isVaulted: diary.isVaulted,
+      isTrashed: true,
+      trashedAt: Date.now(),
+      previewContentPriority: diary.previewContentPriority
+    }
+    await this.update(updated)
   }
 
   async restoreFromTrash(diary: Diary): Promise<void> {
-    await this.update({ ...diary, isTrashed: false, trashedAt: null })
+    const updated: Diary = {
+      id: diary.id,
+      userId: diary.userId,
+      author: diary.author,
+      title: diary.title,
+      content: diary.content,
+      mood: diary.mood,
+      weather: diary.weather,
+      location: diary.location,
+      date: diary.date,
+      createdAt: diary.createdAt,
+      synced: diary.synced,
+      isFavorite: diary.isFavorite,
+      isVaulted: diary.isVaulted,
+      isTrashed: false,
+      trashedAt: null,
+      previewContentPriority: diary.previewContentPriority
+    }
+    await this.update(updated)
   }
 
   async moveToVault(diary: Diary): Promise<void> {
-    await this.update({ ...diary, isVaulted: true })
+    const updated: Diary = {
+      id: diary.id,
+      userId: diary.userId,
+      author: diary.author,
+      title: diary.title,
+      content: diary.content,
+      mood: diary.mood,
+      weather: diary.weather,
+      location: diary.location,
+      date: diary.date,
+      createdAt: diary.createdAt,
+      synced: diary.synced,
+      isFavorite: diary.isFavorite,
+      isVaulted: true,
+      isTrashed: diary.isTrashed,
+      trashedAt: diary.trashedAt,
+      previewContentPriority: diary.previewContentPriority
+    }
+    await this.update(updated)
   }
 
   async vaultedDiaries(): Promise<Diary[]> {
