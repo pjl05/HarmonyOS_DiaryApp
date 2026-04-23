@@ -38,6 +38,7 @@ struct MainPage {
   @State membershipTier: string = 'normal'
 
   private vm: MainViewModel = new MainViewModel()
+  private readonly drawerWidth: number = 280
 
   private tabs: TabConfig[] = [
     { id: 'diary', title: '日记', icon: $r('app.media.ic_tab_diary') },
@@ -297,7 +298,7 @@ struct MainPage {
       }
       .width('100%')
       .height('100%')
-      .offset({ x: this.isDrawerOpen ? 0 : -280 })
+      .offset({ x: this.isDrawerOpen ? 0 : -this.drawerWidth })
       .animation({ duration: 250, curve: Curve.EaseInOut })
       .zIndex(20)
     }

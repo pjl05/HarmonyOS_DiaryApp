@@ -23,7 +23,7 @@ export struct DrawerMenu {
     { id: 'transfer_data', title: '数据迁移', icon: $r('app.media.ic_transfer') },
     { id: 'membership', title: '会员中心', icon: $r('app.media.ic_membership') },
     { id: 'check_update', title: '检查更新', icon: $r('app.media.ic_update') },
-    { id: 'theme_toggle', title: this.isDarkMode ? '日间模式' : '夜间模式', icon: $r('app.media.ic_theme') },
+    { id: 'theme_toggle', title: '夜间模式', icon: $r('app.media.ic_theme') },
     { id: 'settings', title: '设置', icon: $r('app.media.ic_settings') },
     { id: 'about', title: '关于', icon: $r('app.media.ic_about') },
     { id: 'love_zone', title: '爱情区', icon: $r('app.media.ic_love') },
@@ -100,7 +100,9 @@ export struct DrawerMenu {
                   .height(22)
                   .fillColor(this.isDarkMode ? '#CCCCCC' : '#555555')
 
-                Text(item.title)
+                Text(item.id === 'theme_toggle'
+                      ? (this.isDarkMode ? '日间模式' : '夜间模式')
+                      : item.title)
                   .fontSize(15)
                   .fontColor(
                     item.id === 'logout'

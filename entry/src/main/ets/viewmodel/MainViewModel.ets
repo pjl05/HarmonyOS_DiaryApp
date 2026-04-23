@@ -41,11 +41,11 @@ export class MainViewModel {
    * 对标 Android fetchUserProfile()
    */
   async refreshProfile(): Promise<void> {
+    let request = http.createHttp()
     try {
       const token = await PreferencesHelper.getString('token', '')
       if (!token) return
 
-      const request = http.createHttp()
       const response = await request.request(
         ApiConstants.BASE_URL + 'api/user/profile',
         {
@@ -58,37 +58,33 @@ export class MainViewModel {
           readTimeout: 10000
         }
       )
-      request.destroy()
 
       if (response.responseCode !== 200) return
 
-      try {
-        const data = JSON.parse(response.result as string) as Record<string, Object>
-        if (!data.success || !data.data) return
+      const data = JSON.parse(response.result as string) as Record<string, Object>
+      if (!data.success || !data.data) return
 
-        const profile = data.data as Record<string, Object>
-        const nickname: string = profile.nickname ?? profile.username ?? ''
-        const emailVal: string = profile.email ?? ''
-        const tier: string = profile.membership_tier ?? 'normal'
-        const expiresAt: number = profile.membership_expires_at
-          ? new Date(profile.membership_expires_at).getTime()
-          : 0
+      const profile = data.data as Record<string, Object>
+      const nickname: string = profile.nickname ?? profile.username ?? ''
+      const emailVal: string = profile.email ?? ''
+      const tier: string = profile.membership_tier ?? 'normal'
+      const expiresAt: number = profile.membership_expires_at
+        ? new Date(profile.membership_expires_at).getTime()
+        : 0
 
-        this.username = nickname
-        this.email = emailVal
-        this.membershipTier = tier
-        this.membershipExpiresAt = expiresAt
+      this.username = nickname
+      this.email = emailVal
+      this.membershipTier = tier
+      this.membershipExpiresAt = expiresAt
 
-        await PreferencesHelper.putString('username', nickname)
-        await PreferencesHelper.putString('email', emailVal)
-        await PreferencesHelper.putString('membership_tier', tier)
-        await PreferencesHelper.putString('membership_expires_at', expiresAt.toString())
-      } catch (parseErr) {
-        logger.error('refreshProfile JSON parse failed: ' + JSON.stringify(parseErr))
-        return
-      }
+      await PreferencesHelper.putString('username', nickname)
+      await PreferencesHelper.putString('email', emailVal)
+      await PreferencesHelper.putString('membership_tier', tier)
+      await PreferencesHelper.putString('membership_expires_at', expiresAt.toString())
     } catch (err) {
       logger.error('refreshProfile failed: ' + JSON.stringify(err))
+    } finally {
+      request.destroy()
     }
   }
 
@@ -106,8 +102,8 @@ export class MainViewModel {
    * 对标 Android fetchLatestUpdate()
    */
   async fetchLatestUpdate(): Promise<UpdateInfoResponse | null> {
+    let request = http.createHttp()
     try {
-      const request = http.createHttp()
       const response = await request.request(
         ApiConstants.BASE_URL + 'api/version/latest',
         {
@@ -117,7 +113,6 @@ export class MainViewModel {
           readTimeout: 10000
         }
       )
-      request.destroy()
 
       if (response.responseCode !== 200) return null
 
@@ -127,6 +122,8 @@ export class MainViewModel {
     } catch (err) {
       logger.error('fetchLatestUpdate failed: ' + JSON.stringify(err))
       return null
+    } finally {
+      request.destroy()
     }
   }
 
