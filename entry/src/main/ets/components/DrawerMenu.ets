@@ -50,7 +50,7 @@ export struct DrawerMenu {
         // 用户信息区
         Column({ space: 6 }) {
           // 头像
-          Image(this.avatarUri ? this.avatarUri : $r('app.media.app_logo'))
+          Image(this.avatarUri ? this.avatarUri : $r('app.media.startIcon'))
             .width(56)
             .height(56)
             .borderRadius(28)

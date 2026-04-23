@@ -63,10 +63,10 @@ export class MainViewModel {
       if (response.responseCode !== 200) return
 
       try {
-        const data = JSON.parse(response.result as string)
+        const data = JSON.parse(response.result as string) as Record<string, Object>
         if (!data.success || !data.data) return
 
-        const profile = data.data
+        const profile = data.data as Record<string, Object>
         const nickname: string = profile.nickname ?? profile.username ?? ''
         const emailVal: string = profile.email ?? ''
         const tier: string = profile.membership_tier ?? 'normal'

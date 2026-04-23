@@ -48,19 +48,21 @@ export struct BottomBar {
         .justifyContent(FlexAlign.Center)
       } else {
         // 日记/日程/日子 Tab：新建大圆形按钮（对标 btnNew）
-        Stack() {
-          Circle({ width: 52, height: 52 })
-            .fill('#00BCD4')
-            .shadow({
-              radius: 8,
-              color: '#4400BCD4',
-              offsetX: 0,
-              offsetY: 3
-            })
-          Image($r('app.media.ic_add'))
-            .width(28)
-            .height(28)
-            .fillColor('#FFFFFF')
+        Column() {
+          Stack() {
+            Circle({ width: 52, height: 52 })
+              .fill('#00BCD4')
+              .shadow({
+                radius: 8,
+                color: '#4400BCD4',
+                offsetX: 0,
+                offsetY: 3
+              })
+            Image($r('app.media.ic_add'))
+              .width(28)
+              .height(28)
+              .fillColor('#FFFFFF')
+          }
         }
         .layoutWeight(1)
         .height(60)

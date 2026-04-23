@@ -306,10 +306,10 @@ struct MainPage {
     .gesture(
       SwipeGesture({ direction: SwipeDirection.Horizontal, speed: 80 })
         .onAction((event: GestureEvent) => {
-          const angle = (event as ESObject).angle
-          if (angle > 0 && !this.isDrawerOpen) {
+          const swipeAngle = event.angle
+          if (swipeAngle > 0 && !this.isDrawerOpen) {
             this.isDrawerOpen = true
-          } else if (angle < 0 && this.isDrawerOpen) {
+          } else if (swipeAngle < 0 && this.isDrawerOpen) {
             this.isDrawerOpen = false
           }
         })

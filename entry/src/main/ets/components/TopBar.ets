@@ -26,7 +26,7 @@ export struct TopBar {
         .onClick(() => this.onMenuClick())
 
       // 头像（对标 ivAvatar）
-      Image(this.avatarUri ? this.avatarUri : $r('app.media.app_logo'))
+      Image(this.avatarUri ? this.avatarUri : $r('app.media.startIcon'))
         .width(34)
         .height(34)
         .borderRadius(17)
