@@ -107,19 +107,22 @@ export class DiaryRepository {
       previewContentPriority: diary.previewContentPriority
     }
     const predicates = new relationalStore.RdbPredicates('diaries')
-    await store.update('diaries', bucket, predicates.equalTo('id', diary.id))
+    predicates.equalTo('id', diary.id)
+    await store.update('diaries', bucket, predicates)
   }
 
   async delete(diary: Diary): Promise<void> {
     const store = await this.getStore()
     const predicates = new relationalStore.RdbPredicates('diaries')
-    await store.delete(predicates.equalTo('id', diary.id))
+    predicates.equalTo('id', diary.id)
+    await store.delete(predicates)
   }
 
   async findById(id: number): Promise<Diary | null> {
     const store = await this.getStore()
     const predicates = new relationalStore.RdbPredicates('diaries')
-    const result = await store.query(predicates.equalTo('id', id))
+    predicates.equalTo('id', id)
+    const result = await store.query(predicates)
     return this.rowToDiary(result)
   }
 
@@ -285,8 +288,9 @@ export class DiaryRepository {
       updatedAt: Date.now()
     }
     if (draft.id > 0) {
-      await store.update('draft_diaries', bucket,
-        new relationalStore.RdbPredicates('draft_diaries').equalTo('id', draft.id))
+      const pred = new relationalStore.RdbPredicates('draft_diaries')
+      pred.equalTo('id', draft.id)
+      await store.update('draft_diaries', bucket, pred)
       return draft.id
     } else {
       return await store.insert('draft_diaries', bucket)
@@ -295,9 +299,9 @@ export class DiaryRepository {
 
   async deleteDraft(draftId: number): Promise<void> {
     const store = await this.getStore()
-    await store.delete(
-      new relationalStore.RdbPredicates('draft_diaries').equalTo('id', draftId)
-    )
+    const predicates = new relationalStore.RdbPredicates('draft_diaries')
+    predicates.equalTo('id', draftId)
+    await store.delete(predicates)
   }
 
   private rowToDiary(result: relationalStore.ResultSet): Diary | null {

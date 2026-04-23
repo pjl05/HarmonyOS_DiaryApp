@@ -7,7 +7,7 @@ export struct MoodPicker {
   @Prop selected: string = 'neutral'
   onSelected: (mood: string) => void = () => {}
 
-  private moods = [
+  private moods: MoodItem[] = [
     { id: 'happy',   label: '开心' },
     { id: 'neutral', label: '平静' },
     { id: 'sad',     label: '难过' },
@@ -23,7 +23,7 @@ export struct MoodPicker {
         .fontColor('#888888')
 
       Row({ space: 12 }) {
-        ForEach(this.moods, (m: { id: string; label: string }) => {
+        ForEach(this.moods, (m: MoodItem) => {
           Column({ space: 4 }) {
             Stack() {
               Circle({ width: 40, height: 40 })
@@ -57,4 +57,9 @@ export struct MoodPicker {
     }
     return map[id] ?? '😐'
   }
+}
+
+interface MoodItem {
+  id: string
+  label: string
 }

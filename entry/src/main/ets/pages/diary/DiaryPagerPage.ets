@@ -8,9 +8,14 @@ import { DiaryViewModel } from '../../viewmodel/DiaryViewModel'
 import { DiaryCard, DiaryWrapper } from '../../components/DiaryCard'
 import promptAction from '@ohos.promptAction'
 import { getLogger } from '../../utils/Logger'
+import { Diary } from '../../model/DiaryModel'
 
 const logger = getLogger('DiaryPagerPage')
-import { Diary } from '../../model/DiaryModel'
+
+interface MenuActionType {
+  text: string
+  color: string
+}
 
 @Component
 export struct DiaryPagerPage {
@@ -50,14 +55,14 @@ export struct DiaryPagerPage {
   }
 
   private onDiaryLongPress(diary: Diary): void {
-    const menuActions = [
-      { text: diary.isFavorite ? '取消收藏' : '收藏', color: '#FF9800' },
+    const isFav = diary.isFavorite
+    const menuActions: MenuActionType[] = [
+      { text: isFav ? '取消收藏' : '收藏', color: '#FF9800' },
       { text: '移至回收站', color: '#F44336' },
       { text: '移动到保险箱', color: '#2196F3' },
       { text: '取消', color: '#999999' }
     ]
-    promptAction.showActionMenu({
-      buttons: menuActions.map(a => ({ text: a.text, color: a.color }))
+    const buttons: MenuActionType[] = menuActions.map(a => ({ text: a.text, color: a.color }))
     }).then((result) => {
       const idx = result.index
       if (idx === 0) {
@@ -152,7 +157,7 @@ export struct DiaryPagerPage {
             .fontSize(14)
             .fontColor(this.currentFilter === label ? '#00BCD4' : '#999999')
             .fontWeight(this.currentFilter === label ? FontWeight.Bold : FontWeight.Normal)
-            .onClick((): void => { this.currentFilter = label })
+            .onClick((): void => { this.currentFilter = label as '全部' | '图片' | '视频' })
         })
       }
       .width('100%')
@@ -167,8 +172,8 @@ export struct DiaryPagerPage {
             ListItem() {
               DiaryCard({
                 diaryWrapper: item,
-                onClick: (): void => this.onDiaryClick(item.diary),
-                onLongPress: (): void => this.onDiaryLongPress(item.diary),
+                onCardClick: (): void => this.onDiaryClick(item.diary),
+                onCardLongPress: (): void => this.onDiaryLongPress(item.diary),
                 onFavoriteClick: (): void => this.onFavoriteToggle(item.diary)
               })
             }

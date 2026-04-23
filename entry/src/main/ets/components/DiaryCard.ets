@@ -20,9 +20,10 @@ export class DiaryWrapper {
 @Component
 export struct DiaryCard {
   @ObjectLink diaryWrapper: DiaryWrapper
-  onClick: () => void = () => {}
+
+  onCardClick: () => void = () => {}
   onFavoriteClick: () => void = () => {}
-  onLongPress: () => void = () => {}
+  onCardLongPress: () => void = () => {}
 
   private formatDate(millis: number): string {
     const d = new Date(millis)
@@ -82,14 +83,14 @@ export struct DiaryCard {
       }
       .width('100%')
       .margin({ top: 8 })
+      .onClick(() => this.onCardClick())
+      .onLongPress(() => this.onCardLongPress())
     }
     .width('100%')
     .padding(16)
     .backgroundColor('#FFFFFF')
     .borderRadius(12)
     .shadow({ radius: 6, color: '#15000000', offsetX: 0, offsetY: 2 })
-    .onClick(() => this.onClick())
-    .onLongPress(() => this.onLongPress())
   }
 
   private getWeatherLabel(w: string): string {

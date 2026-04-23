@@ -7,7 +7,7 @@ export struct WeatherPicker {
   @Prop selected: string = 'sunny'
   onSelected: (weather: string) => void = () => {}
 
-  private weathers = [
+  private weathers: WeatherItem[] = [
     { id: 'sunny',  label: '晴' },
     { id: 'cloudy', label: '多云' },
     { id: 'rainy',  label: '雨' },
@@ -23,7 +23,7 @@ export struct WeatherPicker {
         .fontColor('#888888')
 
       Row({ space: 12 }) {
-        ForEach(this.weathers, (w: { id: string; label: string }) => {
+        ForEach(this.weathers, (w: WeatherItem) => {
           Column({ space: 4 }) {
             Stack() {
               Circle({ width: 40, height: 40 })
@@ -57,4 +57,9 @@ export struct WeatherPicker {
     }
     return map[id] ?? '☀️'
   }
+}
+
+interface WeatherItem {
+  id: string
+  label: string
 }
