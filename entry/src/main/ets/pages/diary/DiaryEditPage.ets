@@ -4,6 +4,7 @@
  * 包含标题编辑、内容、天气心情选择、日期选择、图片添加、自动草稿保存
  */
 import router from '@ohos.router'
+import { AppStorage } from '@kit.ArkData'
 import promptAction from '@ohos.promptAction'
 import { DiaryEditViewModel } from '../../viewmodel/DiaryEditViewModel'
 import { WeatherPicker } from '../../components/WeatherPicker'
@@ -79,6 +80,7 @@ struct DiaryEditPage {
       const success = await this.vm.publish()
       if (success) {
         promptAction.showToast({ message: '保存成功' })
+        AppStorage.set('diary_saved', true)
         router.back()
       } else {
         promptAction.showToast({ message: '标题或内容不能全为空' })

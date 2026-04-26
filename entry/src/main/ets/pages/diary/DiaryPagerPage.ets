@@ -4,6 +4,7 @@
  * 支持「全部/图片/视频」Tab 筛选，下拉刷新，搜索适配，空状态显示
  */
 import router from '@ohos.router'
+import { AppStorage } from '@kit.ArkData'
 import { DiaryViewModel } from '../../viewmodel/DiaryViewModel'
 import { DiaryCard, DiaryWrapper } from '../../components/DiaryCard'
 import promptAction from '@ohos.promptAction'
@@ -19,31 +20,63 @@ interface MenuAction {
   color: string
 }
 
+interface Button {
+  text: string
+  color: string
+}
+
 @Component
 export struct DiaryPagerPage {
-  @State diaries: DiaryWrapper[] = []
+  @State allDiaries: DiaryWrapper[] = []
   @State currentFilter: FilterLabel = '全部'
   @State showEmpty: boolean = false
 
   private vm: DiaryViewModel | null = null
 
   aboutToAppear(): void {
-    this.initViewModel()
+    // 初始化 ViewModel
+    if (this.vm === null) {
+      this.vm = new DiaryViewModel(getContext(this))
+    }
+    // 加载日记列表
+    this.loadDiaries()
   }
 
-  private async initViewModel(): Promise<void> {
-    const context = getContext(this)
-    this.vm = new DiaryViewModel(context)
-    await this.vm.loadAll()
-    this.diaries = this.vm.diaries.map(d => new DiaryWrapper(d))
-    this.showEmpty = this.diaries.length === 0
+  onPageShow(): void {
+    // 从编辑页返回时，检测 AppStorage 标志并刷新列表
+    const diarySaved = AppStorage.get<boolean>('diary_saved')
+    if (diarySaved === true) {
+      AppStorage.set('diary_saved', false)
+      this.loadDiaries()
+    }
+  }
+
+  private async loadDiaries(): Promise<void> {
+    if (!this.vm) return
+    try {
+      await this.vm.loadAll()
+      this.allDiaries = this.vm.diaries.map(d => new DiaryWrapper(d))
+      this.showEmpty = this.allDiaries.length === 0
+    } catch (err) {
+      logger.error('loadDiaries failed: ' + JSON.stringify(err))
+    }
+  }
+
+  private getFilteredDiaries(): DiaryWrapper[] {
+    if (this.currentFilter === '全部') {
+      return this.allDiaries
+    }
+    if (this.currentFilter === '图片') {
+      return this.allDiaries.filter(w => w.diary.previewContentPriority === 'image')
+    }
+    return this.allDiaries.filter(w => w.diary.previewContentPriority === 'video')
   }
 
   private onSearchChanged(query: string): void {
     this.vm?.setSearchQuery(query)
     if (this.vm) {
-      this.diaries = this.vm.diaries.map(d => new DiaryWrapper(d))
-      this.showEmpty = this.diaries.length === 0
+      this.allDiaries = this.vm.diaries.map(d => new DiaryWrapper(d))
+      this.showEmpty = this.allDiaries.length === 0
     }
   }
 
@@ -64,14 +97,14 @@ export struct DiaryPagerPage {
       { text: '移动到保险箱', color: '#2196F3' },
       { text: '取消', color: '#999999' }
     ]
-    const buttons: MenuAction[] = menuActions.map((a: MenuAction): MenuAction => {
+    const buttons: Button[] = menuActions.map((a: MenuAction): Button => {
       return { text: a.text, color: a.color }
     })
-    promptAction.showActionMenu({ buttons: buttons }).then((result) => {
+    promptAction.showActionMenu({ buttons: buttons as [Button, Button?, Button?, Button?] }).then((result) => {
       const idx = result.index
       if (idx === 0) {
         this.vm?.toggleFavorite(diary)
-        this.diaries = this.diaries.map(w => {
+        this.allDiaries = this.allDiaries.map(w => {
           if (w.diary.id === diary.id) {
             const d = w.diary
             w.diary = {
@@ -97,11 +130,11 @@ export struct DiaryPagerPage {
         })
       } else if (idx === 1) {
         this.vm?.moveToTrash(diary)
-        this.diaries = this.diaries.filter(w => w.diary.id !== diary.id)
+        this.allDiaries = this.allDiaries.filter(w => w.diary.id !== diary.id)
         promptAction.showToast({ message: '已移至回收站' })
       } else if (idx === 2) {
         this.vm?.moveToVault(diary)
-        this.diaries = this.diaries.filter(w => w.diary.id !== diary.id)
+        this.allDiaries = this.allDiaries.filter(w => w.diary.id !== diary.id)
         promptAction.showToast({ message: '已移动到保险箱' })
       }
     }).catch(() => {})
@@ -109,7 +142,7 @@ export struct DiaryPagerPage {
 
   private onFavoriteToggle(diary: Diary): void {
     this.vm?.toggleFavorite(diary)
-    this.diaries = this.diaries.map(w => {
+    this.allDiaries = this.allDiaries.map(w => {
       if (w.diary.id === diary.id) {
         const d = w.diary
         w.diary = {
@@ -172,7 +205,7 @@ export struct DiaryPagerPage {
         this.EmptyView()
       } else {
         List({ space: 10 }) {
-          ForEach(this.diaries, (item: DiaryWrapper) => {
+          ForEach(this.getFilteredDiaries(), (item: DiaryWrapper) => {
             ListItem() {
               DiaryCard({
                 diaryWrapper: item,

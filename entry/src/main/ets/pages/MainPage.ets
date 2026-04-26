@@ -111,7 +111,7 @@ struct MainPage {
     this.isDrawerOpen = false
     switch (itemId) {
       case 'favorites':
-        promptAction.showToast({ message: '收藏页面（Day 5-7 实现）' })
+        router.pushUrl({ url: 'pages/diary/FavoritesPage' }).catch(() => {})
         break
       case 'vault':
         if (this.membershipTier === 'normal') {
@@ -121,10 +121,10 @@ struct MainPage {
         }
         break
       case 'recycle_bin':
-        promptAction.showToast({ message: '回收站（Day 5-7 实现）' })
+        router.pushUrl({ url: 'pages/diary/RecycleBinPage' }).catch(() => {})
         break
       case 'drafts':
-        promptAction.showToast({ message: '草稿箱（Day 5-7 实现）' })
+        router.pushUrl({ url: 'pages/diary/DraftsPage' }).catch(() => {})
         break
       case 'export_history':
         promptAction.showToast({ message: '导出历史（Day 5-7 实现）' })
@@ -169,10 +169,11 @@ struct MainPage {
     router.replaceUrl({ url: 'pages/LoginPage' }).catch(() => {})
   }
 
-  private handleNewClick() {
+  private async handleNewClick() {
     switch (this.currentTabIndex) {
       case 0:
-        promptAction.showToast({ message: '新建日记（Day 5 实现）' })
+        // 跳转到编辑页，刷新由 DiaryEditPage 保存后通过 AppStorage 标志触发
+        await router.pushUrl({ url: 'pages/diary/DiaryEditPage' }).catch(() => {})
         break
       case 1:
         promptAction.showToast({ message: '新建日程（Day 11 实现）' })
