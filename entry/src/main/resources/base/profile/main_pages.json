@@ -11,6 +11,9 @@
     "pages/diary/RecycleBinPage",
     "pages/ChatPage",
     "pages/ChatManagementPage",
-    "pages/calendar/CalendarPage"
+    "pages/calendar/CalendarPage",
+    "pages/ScheduleListPage",
+    "pages/ScheduleDetailPage",
+    "pages/AlarmFullscreenPage"
   ]
 }
