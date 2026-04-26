@@ -7,6 +7,11 @@ import { DiaryRepository } from '../../repository/DiaryRepository'
 import { DraftDiary } from '../../model/DraftDiaryModel'
 import promptAction from '@ohos.promptAction'
 
+interface Button {
+  text: string
+  color: string
+}
+
 @Entry
 @Component
 export struct DraftsPage {
@@ -36,7 +41,7 @@ export struct DraftsPage {
       buttons: [
         { text: '删除草稿', color: '#F44336' },
         { text: '取消', color: '#999999' }
-      ]
+      ] as [Button, Button?]
     }).then(async (result): Promise<void> => {
       if (result.index === 0 && this.repo) {
         await this.repo.deleteDraft(draft.id)
@@ -64,44 +69,47 @@ export struct DraftsPage {
   @Builder
   buildDraftItem(draft: DraftDiary) {
     Column({ space: 8 }) {
-      Row() {
-        Text(this.formatDate(draft.date))
-          .fontSize(12)
-          .fontColor('#999999')
-        Blank()
-        Text('草稿')
-          .fontSize(11)
-          .fontColor('#FF9800')
-          .backgroundColor('#FFF3E0')
-          .padding({ left: 8, right: 8, top: 2, bottom: 2 })
-          .borderRadius(8)
+      Column({ space: 8 }) {
+        Row() {
+          Text(this.formatDate(draft.date))
+            .fontSize(12)
+            .fontColor('#999999')
+          Blank()
+          Text('草稿')
+            .fontSize(11)
+            .fontColor('#FF9800')
+            .backgroundColor('#FFF3E0')
+            .padding({ left: 8, right: 8, top: 2, bottom: 2 })
+            .borderRadius(8)
+        }
+        Text(draft.title || '(无标题)')
+          .fontSize(15)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#222222')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+        Text(draft.content.replace(/<[^>]*>/g, '').trim())
+          .fontSize(13)
+          .fontColor('#888888')
+          .maxLines(2)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
-      Text(draft.title || '(无标题)')
-        .fontSize(15)
-        .fontWeight(FontWeight.Medium)
-        .fontColor('#222222')
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-      Text(draft.content.replace(/<[^>]*>/g, '').trim())
-        .fontSize(13)
-        .fontColor('#888888')
-        .maxLines(2)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
+      .width('100%')
+      .onClick((): void => {
+        router.pushUrl({
+          url: 'pages/diary/DiaryEditPage',
+          params: { draftId: draft.id }
+        }).catch((): void => {})
+      })
     }
     .width('100%')
     .padding(16)
     .backgroundColor('#FFFFFF')
     .borderRadius(12)
     .shadow({ radius: 4, color: '#10000000', offsetX: 0, offsetY: 2 })
-    .onClick((): void => {
-      router.pushUrl({
-        url: 'pages/diary/DiaryEditPage',
-        params: { draftId: draft.id }
-      }).catch((): void => {})
-    })
-    .onLongPress((): void => {
+    .gesture(LongPressGesture().onAction((): void => {
       this.showDraftMenu(draft)
-    })
+    }))
   }
 
   build() {

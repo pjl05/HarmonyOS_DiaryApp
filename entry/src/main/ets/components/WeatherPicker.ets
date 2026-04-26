@@ -52,18 +52,17 @@ export struct WeatherPicker {
   }
 
   private getWeatherEmoji(id: string): string {
-    const map: EmojiMap = {
-      sunny: '☀️', cloudy: '⛅', rainy: '🌧️', snowy: '❄️', windy: '💨', foggy: '🌫️'
-    }
-    return map[id] ?? '☀️'
+    if (id === 'sunny') return '☀️'
+    if (id === 'cloudy') return '⛅'
+    if (id === 'rainy') return '🌧️'
+    if (id === 'snowy') return '❄️'
+    if (id === 'windy') return '💨'
+    if (id === 'foggy') return '🌫️'
+    return '☀️'
   }
 }
 
 interface WeatherItem {
   id: string
   label: string
-}
-
-interface EmojiMap {
-  [key: string]: string
 }

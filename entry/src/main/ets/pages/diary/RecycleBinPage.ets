@@ -7,6 +7,11 @@ import { DiaryRepository } from '../../repository/DiaryRepository'
 import { Diary } from '../../model/DiaryModel'
 import promptAction from '@ohos.promptAction'
 
+interface Button {
+  text: string
+  color: string
+}
+
 @Entry
 @Component
 export struct RecycleBinPage {
@@ -37,7 +42,7 @@ export struct RecycleBinPage {
         { text: '恢复', color: '#4CAF50' },
         { text: '永久删除', color: '#F44336' },
         { text: '取消', color: '#999999' }
-      ]
+      ] as [Button, Button?, Button?]
     }).then(async (result): Promise<void> => {
       if (!this.repo) return
       if (result.index === 0) {
@@ -59,7 +64,7 @@ export struct RecycleBinPage {
       buttons: [
         { text: '取消', color: '#999999' },
         { text: '清空', color: '#F44336' }
-      ]
+      ] as [Button, Button?]
     }).then(async (result): Promise<void> => {
       if (result.index === 1 && this.repo) {
         for (const d of this.trashedDiaries) {
@@ -89,39 +94,42 @@ export struct RecycleBinPage {
   @Builder
   buildTrashItem(diary: Diary) {
     Column({ space: 8 }) {
-      Row() {
-        Text(this.formatDate(diary.date))
-          .fontSize(12)
-          .fontColor('#999999')
-        Blank()
-        Text('回收站')
-          .fontSize(11)
-          .fontColor('#F44336')
-          .backgroundColor('#FFEBEE')
-          .padding({ left: 8, right: 8, top: 2, bottom: 2 })
-          .borderRadius(8)
+      Column({ space: 8 }) {
+        Row() {
+          Text(this.formatDate(diary.date))
+            .fontSize(12)
+            .fontColor('#999999')
+          Blank()
+          Text('回收站')
+            .fontSize(11)
+            .fontColor('#F44336')
+            .backgroundColor('#FFEBEE')
+            .padding({ left: 8, right: 8, top: 2, bottom: 2 })
+            .borderRadius(8)
+        }
+        Text(diary.title || '(无标题)')
+          .fontSize(15)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#222222')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
       }
-      Text(diary.title || '(无标题)')
-        .fontSize(15)
-        .fontWeight(FontWeight.Medium)
-        .fontColor('#222222')
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
+      .width('100%')
+      .onClick((): void => {
+        router.pushUrl({
+          url: 'pages/diary/DiaryViewPage',
+          params: { diaryId: diary.id }
+        }).catch((): void => {})
+      })
     }
     .width('100%')
     .padding(16)
     .backgroundColor('#FFFFFF')
     .borderRadius(12)
     .shadow({ radius: 4, color: '#10000000', offsetX: 0, offsetY: 2 })
-    .onClick((): void => {
-      router.pushUrl({
-        url: 'pages/diary/DiaryViewPage',
-        params: { diaryId: diary.id }
-      }).catch((): void => {})
-    })
-    .onLongPress((): void => {
+    .gesture(LongPressGesture().onAction((): void => {
       this.showTrashMenu(diary)
-    })
+    }))
   }
 
   build() {

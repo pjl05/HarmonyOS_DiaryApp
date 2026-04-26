@@ -6,6 +6,12 @@ import router from '@ohos.router'
 import { DiaryViewModel } from '../../viewmodel/DiaryViewModel'
 import { DiaryCard, DiaryWrapper } from '../../components/DiaryCard'
 import promptAction from '@ohos.promptAction'
+import { Diary } from '../../model/DiaryModel'
+
+interface Button {
+  text: string
+  color: string
+}
 
 @Entry
 @Component
@@ -24,6 +30,27 @@ export struct FavoritesPage {
     await this.vm?.loadFavorites()
     this.diaries = (this.vm?.favoriteDiaries ?? []).map(d => new DiaryWrapper(d))
     this.showEmpty = this.diaries.length === 0
+  }
+
+  private onDiaryLongPress(diary: Diary): void {
+    promptAction.showActionMenu({
+      buttons: [
+        { text: '取消收藏', color: '#FF9800' },
+        { text: '移至回收站', color: '#F44336' },
+        { text: '取消', color: '#999999' }
+      ] as [Button, Button?, Button?]
+    }).then(async (result): Promise<void> => {
+      if (!this.vm) return
+      if (result.index === 0) {
+        await this.vm.toggleFavorite(diary)
+        this.loadFavorites()
+        promptAction.showToast({ message: '已取消收藏' })
+      } else if (result.index === 1) {
+        await this.vm.moveToTrash(diary)
+        this.loadFavorites()
+        promptAction.showToast({ message: '已移至回收站' })
+      }
+    }).catch((): void => {})
   }
 
   @Builder
@@ -76,6 +103,7 @@ export struct FavoritesPage {
                     params: { diaryId: item.diary.id }
                   }).catch((): void => {})
                 },
+                onCardLongPress: (): void => this.onDiaryLongPress(item.diary),
                 onFavoriteClick: (): void => {
                   this.vm?.toggleFavorite(item.diary)
                   this.loadFavorites()

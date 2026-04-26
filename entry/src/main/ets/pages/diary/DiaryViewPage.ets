@@ -11,12 +11,9 @@ import { getLogger } from '../../utils/Logger'
 
 const logger = getLogger('DiaryViewPage')
 
-interface EmojiMap {
-  [key: string]: string
-}
-
-interface LabelMap {
-  [key: string]: string
+interface Button {
+  text: string
+  color: string
 }
 
 @Entry
@@ -64,7 +61,7 @@ struct DiaryViewPage {
         { text: diary.isFavorite ? '取消收藏' : '收藏', color: '#FF9800' },
         { text: '移至回收站', color: '#F44336' },
         { text: '取消', color: '#999999' }
-      ]
+      ] as [Button, Button?, Button?, Button?]
     }).then(async (result): Promise<void> => {
       if (!this.repo || !this.diary) return
       switch (result.index) {
@@ -178,22 +175,42 @@ struct DiaryViewPage {
   }
 
   private getWeatherEmoji(w: string): string {
-    const map: EmojiMap = { sunny: '☀️', cloudy: '⛅', rainy: '🌧️', snowy: '❄️', windy: '💨', foggy: '🌫️' }
-    return map[w] ?? '☀️'
+    if (w === 'sunny') return '☀️'
+    if (w === 'cloudy') return '⛅'
+    if (w === 'rainy') return '🌧️'
+    if (w === 'snowy') return '❄️'
+    if (w === 'windy') return '💨'
+    if (w === 'foggy') return '🌫️'
+    return '☀️'
   }
 
   private getWeatherLabel(w: string): string {
-    const map: LabelMap = { sunny: '晴', cloudy: '多云', rainy: '雨', snowy: '雪', windy: '风', foggy: '雾' }
-    return map[w] ?? '晴'
+    if (w === 'sunny') return '晴'
+    if (w === 'cloudy') return '多云'
+    if (w === 'rainy') return '雨'
+    if (w === 'snowy') return '雪'
+    if (w === 'windy') return '风'
+    if (w === 'foggy') return '雾'
+    return '晴'
   }
 
   private getMoodEmoji(m: string): string {
-    const map: EmojiMap = { happy: '😊', neutral: '😐', sad: '😢', angry: '😠', worried: '😰', excited: '🤩' }
-    return map[m] ?? '😐'
+    if (m === 'happy') return '😊'
+    if (m === 'neutral') return '😐'
+    if (m === 'sad') return '😢'
+    if (m === 'angry') return '😠'
+    if (m === 'worried') return '😰'
+    if (m === 'excited') return '🤩'
+    return '😐'
   }
 
   private getMoodLabel(m: string): string {
-    const map: LabelMap = { happy: '开心', neutral: '平静', sad: '难过', angry: '生气', worried: '担心', excited: '兴奋' }
-    return map[m] ?? '平静'
+    if (m === 'happy') return '开心'
+    if (m === 'neutral') return '平静'
+    if (m === 'sad') return '难过'
+    if (m === 'angry') return '生气'
+    if (m === 'worried') return '担心'
+    if (m === 'excited') return '兴奋'
+    return '平静'
   }
 }

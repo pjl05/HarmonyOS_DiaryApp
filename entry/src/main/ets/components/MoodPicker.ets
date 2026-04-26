@@ -52,18 +52,17 @@ export struct MoodPicker {
   }
 
   private getMoodEmoji(id: string): string {
-    const map: EmojiMap = {
-      happy: '😊', neutral: '😐', sad: '😢', angry: '😠', worried: '😰', excited: '🤩'
-    }
-    return map[id] ?? '😐'
+    if (id === 'happy') return '😊'
+    if (id === 'neutral') return '😐'
+    if (id === 'sad') return '😢'
+    if (id === 'angry') return '😠'
+    if (id === 'worried') return '😰'
+    if (id === 'excited') return '🤩'
+    return '😐'
   }
 }
 
 interface MoodItem {
   id: string
   label: string
-}
-
-interface EmojiMap {
-  [key: string]: string
 }

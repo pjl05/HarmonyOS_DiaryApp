@@ -17,12 +17,6 @@ export class DiaryWrapper {
   }
 }
 
-interface ClickHandlers {
-  onCardClick: () => void
-  onFavoriteClick: () => void
-  onCardLongPress: () => void
-}
-
 @Component
 export struct DiaryCard {
   @ObjectLink diaryWrapper: DiaryWrapper
@@ -44,12 +38,74 @@ export struct DiaryCard {
     return plain.length > 80 ? plain.substring(0, 80) + '...' : plain
   }
 
+  private getWeatherLabel(): string {
+    const w = this.diaryWrapper.diary.weather
+    if (w === 'sunny') return '☀️'
+    if (w === 'cloudy') return '⛅'
+    if (w === 'rainy') return '🌧️'
+    if (w === 'snowy') return '❄️'
+    if (w === 'windy') return '💨'
+    if (w === 'foggy') return '🌫️'
+    return '☀️'
+  }
+
+  private getMoodLabel(): string {
+    const m = this.diaryWrapper.diary.mood
+    if (m === 'happy') return '😊'
+    if (m === 'neutral') return '😐'
+    if (m === 'sad') return '😢'
+    if (m === 'angry') return '😠'
+    if (m === 'worried') return '😰'
+    if (m === 'excited') return '🤩'
+    return '😐'
+  }
+
   build() {
     Column() {
-      this.buildHeader()
-      this.buildTitle()
-      this.buildPreview()
-      this.buildFavoriteRow()
+      Row() {
+        Text(this.formatDate(this.diaryWrapper.diary.date))
+          .fontSize(12)
+          .fontColor('#999999')
+        Blank()
+        Text(this.getWeatherLabel())
+          .fontSize(11)
+          .fontColor('#888888')
+        Text(' ')
+          .fontSize(11)
+        Text(this.getMoodLabel())
+          .fontSize(11)
+          .fontColor('#888888')
+      }
+      .width('100%')
+
+      Text(this.diaryWrapper.diary.title || '(无标题)')
+        .fontSize(16)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#222222')
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .margin({ top: 8 })
+        .width('100%')
+
+      if (this.getPreviewText()) {
+        Text(this.getPreviewText())
+          .fontSize(13)
+          .fontColor('#666666')
+          .maxLines(2)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .margin({ top: 4 })
+          .width('100%')
+      }
+
+      Row() {
+        Blank()
+        Text(this.diaryWrapper.diary.isFavorite ? '♥' : '♡')
+          .fontSize(18)
+          .fontColor(this.diaryWrapper.diary.isFavorite ? '#FF5722' : '#BBBBBB')
+          .onClick(() => this.onFavoriteClick())
+      }
+      .width('100%')
+      .margin({ top: 8 })
     }
     .width('100%')
     .padding(16)
@@ -57,76 +113,6 @@ export struct DiaryCard {
     .borderRadius(12)
     .shadow({ radius: 6, color: '#15000000', offsetX: 0, offsetY: 2 })
     .onClick(() => this.onCardClick())
-    .onLongPress(() => this.onCardLongPress())
-  }
-
-  @Builder
-  buildHeader() {
-    Row() {
-      Text(this.formatDate(this.diaryWrapper.diary.date))
-        .fontSize(12)
-        .fontColor('#999999')
-      Blank()
-      Row({ space: 8 }) {
-        Text(this.getWeatherLabel(this.diaryWrapper.diary.weather))
-          .fontSize(11)
-          .fontColor('#888888')
-        Text(' ')
-        Text(this.getMoodLabel(this.diaryWrapper.diary.mood))
-          .fontSize(11)
-          .fontColor('#888888')
-      }
-    }
-    .width('100%')
-  }
-
-  @Builder
-  buildTitle() {
-    Text(this.diaryWrapper.diary.title || '(无标题)')
-      .fontSize(16)
-      .fontWeight(FontWeight.Medium)
-      .fontColor('#222222')
-      .maxLines(1)
-      .textOverflow({ overflow: TextOverflow.Ellipsis })
-      .margin({ top: 8 })
-  }
-
-  @Builder
-  buildPreview() {
-    if (this.getPreviewText()) {
-      Text(this.getPreviewText())
-        .fontSize(13)
-        .fontColor('#666666')
-        .maxLines(2)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-        .margin({ top: 4 })
-    }
-  }
-
-  @Builder
-  buildFavoriteRow() {
-    Row() {
-      Blank()
-      Text(this.diaryWrapper.diary.isFavorite ? '♥' : '♡')
-        .fontSize(18)
-        .fontColor(this.diaryWrapper.diary.isFavorite ? '#FF5722' : '#BBBBBB')
-        .onClick(() => this.onFavoriteClick())
-    }
-    .width('100%')
-    .margin({ top: 8 })
-  }
-
-  private getWeatherLabel(w: string): string {
-    const map: Record<string, string> = {
-      sunny: '☀️', cloudy: '⛅', rainy: '🌧️', snowy: '❄️', windy: '💨', foggy: '🌫️'
-    }
-    return map[w] ?? '☀️'
-  }
-
-  private getMoodLabel(m: string): string {
-    const map: Record<string, string> = {
-      happy: '😊', neutral: '😐', sad: '😢', angry: '😠', worried: '😰', excited: '🤩'
-    }
-    return map[m] ?? '😐'
+    .gesture(LongPressGesture().onAction((): void => { this.onCardLongPress() }))
   }
 }
