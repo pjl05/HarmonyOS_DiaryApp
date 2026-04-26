@@ -1,6 +1,8 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { window } from '@kit.ArkUI';
+import { window, AppStorage } from '@kit.ArkUI';
+import { DayDao } from '../data/dao/DayDao';
+import relationalStore from '@ohos.data.relationalStore';
 
 const DOMAIN = 0x0000;
 
@@ -21,6 +23,17 @@ export default class EntryAbility extends UIAbility {
   onWindowStageCreate(windowStage: window.WindowStage): void {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+
+    // Initialize dayRdb for Day module
+    const DAY_DB_CONFIG: relationalStore.StoreConfig = {
+      name: 'DiaryApp.db',
+      securityLevel: relationalStore.SecurityLevel.S1
+    }
+    relationalStore.getRdbStore(this.context, DAY_DB_CONFIG).then(async (rdb) => {
+      const dayDao = new DayDao(rdb)
+      await dayDao.createTable()
+      AppStorage.setOrCreate('dayRdb', rdb)
+    })
 
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
