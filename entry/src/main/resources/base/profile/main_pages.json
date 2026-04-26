@@ -8,6 +8,8 @@
     "pages/diary/DiaryViewPage",
     "pages/diary/FavoritesPage",
     "pages/diary/DraftsPage",
-    "pages/diary/RecycleBinPage"
+    "pages/diary/RecycleBinPage",
+    "pages/ChatPage",
+    "pages/ChatManagementPage"
   ]
 }
