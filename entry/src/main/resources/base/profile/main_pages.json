@@ -10,6 +10,7 @@
     "pages/diary/DraftsPage",
     "pages/diary/RecycleBinPage",
     "pages/ChatPage",
-    "pages/ChatManagementPage"
+    "pages/ChatManagementPage",
+    "pages/calendar/CalendarPage"
   ]
 }
