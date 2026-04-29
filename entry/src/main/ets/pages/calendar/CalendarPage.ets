@@ -1,13 +1,16 @@
 /**
- * CalendarPage - 路由页面入口
+ * CalendarPage - 日历页面 NavDestination
  * 替换 Android: CalendarActivity
  */
-import { CalendarPage as CalendarPageUI } from '../ui/calendar/CalendarPage';
+import { CalendarGrid } from '../../ui/calendar/CalendarGrid'
 
 @Entry
 @Component
 export struct CalendarPage {
   build() {
-    CalendarPageUI()
+    NavDestination() {
+      CalendarGrid()
+    }
+    .title('日历')
   }
 }

@@ -6,7 +6,7 @@
 export struct ChatInputBar {
   @Link inputText: string
   @Prop isLoading: boolean = false
-  onSend: () => void
+  onSend: () => void = () => {}
 
   build() {
     Row() {

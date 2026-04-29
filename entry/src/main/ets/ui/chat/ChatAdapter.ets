@@ -23,8 +23,12 @@ export class ChatAdapter {
   updateLastMessage(text: string): void {
     if (this.wrappers.length === 0) return
     const last = this.wrappers[this.wrappers.length - 1]
-    last.msg = { ...last.msg, message: text }
-    this.wrappers = [...this.wrappers]
+    last.msg.id = last.msg.id
+    last.msg.message = text
+    last.msg.role = last.msg.role
+    last.msg.timestamp = last.msg.timestamp
+    last.msg.sessionId = last.msg.sessionId
+    this.wrappers = this.wrappers.concat()
   }
 
   removeLast(): void {

@@ -4,7 +4,7 @@
  * 支持「全部/图片/视频」Tab 筛选，下拉刷新，搜索适配，空状态显示
  */
 import router from '@ohos.router'
-import { AppStorage } from '@kit.ArkData'
+import { SimpleStorage } from '../../utils/SimpleStorage'
 import { DiaryViewModel } from '../../viewmodel/DiaryViewModel'
 import { DiaryCard, DiaryWrapper } from '../../components/DiaryCard'
 import promptAction from '@ohos.promptAction'
@@ -43,10 +43,10 @@ export struct DiaryPagerPage {
   }
 
   onPageShow(): void {
-    // 从编辑页返回时，检测 AppStorage 标志并刷新列表
-    const diarySaved = AppStorage.get<boolean>('diary_saved')
+    // 从编辑页返回时，检测 SimpleStorage 标志并刷新列表
+    const diarySaved = SimpleStorage.get<boolean>('diary_saved')
     if (diarySaved === true) {
-      AppStorage.set('diary_saved', false)
+      SimpleStorage.set('diary_saved', false)
       this.loadDiaries()
     }
   }

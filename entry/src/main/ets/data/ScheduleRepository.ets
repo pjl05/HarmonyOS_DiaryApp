@@ -19,28 +19,73 @@ export class ScheduleRepository {
 
   async insert(item: Partial<ScheduleItem>): Promise<number> {
     const now = Date.now()
-    const full: Partial<ScheduleItem> = {
-      ...item,
+    const full: ScheduleItem = new ScheduleItem({
+      id: item.id,
       userId: this.userId,
+      scheduledAt: item.scheduledAt,
+      repeatYearly: item.repeatYearly,
+      repeatByLunar: item.repeatByLunar,
+      repeatType: item.repeatType,
+      repeatRangeStart: item.repeatRangeStart,
+      repeatRangeEnd: item.repeatRangeEnd,
+      repeatMonth: item.repeatMonth,
+      repeatDayOfMonth: item.repeatDayOfMonth,
+      repeatWeekday: item.repeatWeekday,
+      repeatHour: item.repeatHour,
+      repeatMinute: item.repeatMinute,
+      lunarMonth: item.lunarMonth,
+      lunarDay: item.lunarDay,
+      lunarLeap: item.lunarLeap,
+      title: item.title,
+      content: item.content,
+      author: item.author,
+      mood: item.mood,
+      weather: item.weather,
+      location: item.location,
       createdAt: now,
-      updatedAt: now
-    }
-    const id = await this.dao.insert(full)
+      updatedAt: now,
+      previewContentPriority: item.previewContentPriority
+    })
+    const id = await this.dao.insert(full as Partial<ScheduleItem>)
     this.notifyChange()
     return id
   }
 
-  async update(item: Partial<ScheduleItem>): Promise<number> {
-    const updated = { ...item, updatedAt: Date.now() }
-    const result = await this.dao.update(updated)
+  async update(item: Partial<ScheduleItem>): Promise<void> {
+    const updated: ScheduleItem = new ScheduleItem({
+      id: item.id,
+      userId: item.userId,
+      scheduledAt: item.scheduledAt,
+      repeatYearly: item.repeatYearly,
+      repeatByLunar: item.repeatByLunar,
+      repeatType: item.repeatType,
+      repeatRangeStart: item.repeatRangeStart,
+      repeatRangeEnd: item.repeatRangeEnd,
+      repeatMonth: item.repeatMonth,
+      repeatDayOfMonth: item.repeatDayOfMonth,
+      repeatWeekday: item.repeatWeekday,
+      repeatHour: item.repeatHour,
+      repeatMinute: item.repeatMinute,
+      lunarMonth: item.lunarMonth,
+      lunarDay: item.lunarDay,
+      lunarLeap: item.lunarLeap,
+      title: item.title,
+      content: item.content,
+      author: item.author,
+      mood: item.mood,
+      weather: item.weather,
+      location: item.location,
+      createdAt: item.createdAt,
+      updatedAt: Date.now(),
+      previewContentPriority: item.previewContentPriority
+    })
+    await this.dao.update(updated as Partial<ScheduleItem>)
     this.notifyChange()
-    return result
   }
 
-  async deleteById(id: number): Promise<number> {
-    const result = await this.dao.deleteById(id)
+  async deleteById(id: number): Promise<void> {
+    await this.dao.deleteById(id)
     this.notifyChange()
-    return result
   }
 
   async getAll(): Promise<ScheduleItem[]> {
@@ -51,11 +96,11 @@ export class ScheduleRepository {
     return this.dao.getById(id)
   }
 
-  observeAll(callback: (items: ScheduleItem[]) => void): emitter.EventId {
+  observeAll(callback: (items: ScheduleItem[]) => void): void {
     const handler = () => {
       this.getAll().then(callback)
     }
-    return emitter.on({ eventId: CHANGE_EVENT_ID }, handler)
+    emitter.on({ eventId: CHANGE_EVENT_ID }, handler)
   }
 
   notifyChange(): void {

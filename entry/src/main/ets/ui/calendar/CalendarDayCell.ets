@@ -53,11 +53,6 @@ export struct CalendarDayCell {
         this.onDayClick(this.state.dayState.cell.dayKey);
       }
     })
-    .onLongPress(() => {
-      if (!this.state.dayState.cell.isPlaceholder) {
-        this.onLongPress(this.state.dayState.cell.dayKey);
-      }
-    })
   }
 
   private getDayTextColor(): string {

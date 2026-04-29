@@ -18,13 +18,15 @@ export class ChatRepository {
   async sendUserMessage(text: string, sessionId: string): Promise<ChatMessage> {
     const msg = createUserMessage(text, sessionId)
     const id = await chatMessageDao.insert(msg)
-    return { ...msg, id }
+    const result: ChatMessage = { id: id, message: msg.message, role: msg.role, timestamp: msg.timestamp, sessionId: msg.sessionId }
+    return result
   }
 
   async insertAiMessage(text: string, sessionId: string): Promise<ChatMessage> {
     const msg = createAiMessage(text, sessionId)
     const id = await chatMessageDao.insert(msg)
-    return { ...msg, id }
+    const result: ChatMessage = { id: id, message: msg.message, role: msg.role, timestamp: msg.timestamp, sessionId: msg.sessionId }
+    return result
   }
 
   async appendToAiMessage(id: number, newContent: string): Promise<string> {

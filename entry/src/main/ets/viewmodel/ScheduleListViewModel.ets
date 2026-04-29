@@ -4,28 +4,28 @@
  */
 import { ScheduleItem } from '../models/ScheduleItem'
 import { ScheduleRepository } from '../data/ScheduleRepository'
-import { ScheduleItemWrapper } from '../components/ScheduleCard'
 import { ReminderService } from '../services/ReminderService'
 import promptAction from '@ohos.promptAction'
 import router from '@ohos.router'
 
-class ScheduleListViewModel {
-  @State schedules: ScheduleItem[] = []
-  @State isLoading: boolean = false
-  @State isEmpty: boolean = true
+@Observed
+export class ScheduleListViewModel {
+  schedules: ScheduleItem[] = []
+  isLoading: boolean = false
+  isEmpty: boolean = true
 
   private repository: ScheduleRepository | null = null
 
-  async init(repository: ScheduleRepository) {
+  async init(repository: ScheduleRepository): Promise<void> {
     this.repository = repository
-    repository.observeAll((items) => {
+    repository.observeAll((items: ScheduleItem[]): void => {
       this.schedules = items
       this.isEmpty = items.length === 0
     })
     await this.loadSchedules()
   }
 
-  async loadSchedules() {
+  async loadSchedules(): Promise<void> {
     if (!this.repository) return
     this.isLoading = true
     try {
@@ -39,7 +39,7 @@ class ScheduleListViewModel {
     }
   }
 
-  async deleteSchedule(item: ScheduleItem) {
+  async deleteSchedule(item: ScheduleItem): Promise<void> {
     if (!this.repository) return
     try {
       await ReminderService.cancel(item.id)
@@ -50,19 +50,35 @@ class ScheduleListViewModel {
     }
   }
 
-  openScheduleDetail(item: ScheduleItem) {
+  async deleteScheduleById(scheduleId: number): Promise<void> {
+    if (!this.repository) return
+    try {
+      await ReminderService.cancel(scheduleId)
+      await this.repository.deleteById(scheduleId)
+      promptAction.showToast({ message: '已删除' })
+    } catch (e) {
+      promptAction.showToast({ message: '删除失败' })
+    }
+  }
+
+  openScheduleDetail(item: ScheduleItem): void {
     router.pushUrl({
       url: 'pages/ScheduleDetailPage',
       params: { scheduleId: item.id }
     })
   }
 
-  openCreatePage() {
+  openScheduleDetailById(scheduleId: number): void {
+    router.pushUrl({
+      url: 'pages/ScheduleDetailPage',
+      params: { scheduleId }
+    })
+  }
+
+  openCreatePage(): void {
     router.pushUrl({
       url: 'pages/ScheduleDetailPage',
       params: { scheduleId: 0 }
     })
   }
 }
-
-export { ScheduleListViewModel }

@@ -3,6 +3,7 @@
  * 对标 Android: ScheduleViewActivity
  */
 import router from '@ohos.router'
+import { SimpleStorage } from '../utils/SimpleStorage'
 import { ScheduleDetailViewModel } from '../viewmodel/ScheduleDetailViewModel'
 import { RepeatRulePicker } from '../components/RepeatRulePicker'
 import { ScheduleDao } from '../data/ScheduleDao'
@@ -22,9 +23,9 @@ struct ScheduleDetailPage {
   }
 
   async initRepository(scheduleId: number) {
-    const context = AppStorage.get<Context>('appContext')!
+    const context = SimpleStorage.get<Context>('appContext')!
     const dao = new ScheduleDao(context)
-    const userId = AppStorage.get<string>('userId') || 'default'
+    const userId = SimpleStorage.get<string>('userId') || 'default'
     this.repository = new ScheduleRepository(dao, userId)
     await this.viewModel.init(this.repository, scheduleId)
   }
@@ -71,11 +72,11 @@ struct ScheduleDetailPage {
 
           if (this.showRepeatPicker) {
             RepeatRulePicker({
-              selectedType: this.viewModel.repeatType as any,
-              selectedWeekday: this.viewModel.repeatWeekday,
-              selectedDayOfMonth: this.viewModel.repeatDayOfMonth,
-              repeatRangeStart: this.viewModel.repeatRangeStart as any,
-              repeatRangeEnd: this.viewModel.repeatRangeEnd as any
+              selectedType: $viewModel.repeatType,
+              selectedWeekday: $viewModel.repeatWeekday,
+              selectedDayOfMonth: $viewModel.repeatDayOfMonth,
+              repeatRangeStart: $viewModel.repeatRangeStart,
+              repeatRangeEnd: $viewModel.repeatRangeEnd
             })
           }
 
@@ -103,6 +104,7 @@ struct ScheduleDetailPage {
     .title('日程详情')
     .onBackPressed(() => {
       router.back()
+      return true
     })
   }
 
@@ -128,12 +130,17 @@ struct ScheduleDetailPage {
     }
   }
 
-  private showDatePicker() {
+  private showDatePicker(): void {
     DatePickerDialog.show({
       start: new Date(),
       selected: new Date(this.viewModel.scheduledAt),
-      onAccept: (result) => {
-        this.viewModel.setDate(result.time)
+      onAccept: (result: DatePickerResult) => {
+        const year = result.year ?? new Date().getFullYear()
+        const month = result.month ?? 0
+        const day = result.day ?? 1
+        const selectedDate = year + '-' + (month + 1) + '-' + day
+        const millis = new Date(selectedDate).getTime()
+        this.viewModel.setDate(millis > 0 ? millis : this.viewModel.scheduledAt)
       }
     })
   }

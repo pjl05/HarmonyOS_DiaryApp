@@ -2,7 +2,7 @@
  * CalendarPage - 日历页面 NavDestination
  * 替换 Android: CalendarActivity
  */
-import { CalendarGrid } from './CalendarGrid';
+import { CalendarGrid } from './CalendarGrid'
 
 @Component
 export struct CalendarPage {
@@ -11,6 +11,5 @@ export struct CalendarPage {
       CalendarGrid()
     }
     .title('日历')
-    .titleMode(NavDestinationTitleMode.Medium)
   }
 }

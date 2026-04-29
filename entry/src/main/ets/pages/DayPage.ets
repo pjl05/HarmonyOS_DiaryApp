@@ -4,6 +4,7 @@
  */
 import router from '@ohos.router'
 import promptAction from '@ohos.promptAction'
+import { SimpleStorage } from '../utils/SimpleStorage'
 import { DayViewModel } from '../viewmodel/DayViewModel'
 import { DayRepository } from '../data/repository/DayRepository'
 import { DayDao } from '../data/dao/DayDao'
@@ -15,7 +16,7 @@ import relationalStore from '@ohos.data.relationalStore'
 @Component
 struct DayPage {
   @State private vm: DayViewModel = new DayViewModel(
-    new DayRepository(new DayDao(AppStorage.get('dayRdb') as relationalStore.RdbStore))
+    new DayRepository(new DayDao(SimpleStorage.get('dayRdb') as relationalStore.RdbStore))
   )
   @State private dayId: number = 0
 

@@ -5,7 +5,7 @@
  */
 import { Diary } from '../model/DiaryModel'
 import { DraftDiary } from '../model/DraftDiaryModel'
-import { relationalStore } from '@kit.ArkData'
+import relationalStore from '@ohos.data.relationalStore'
 import { getLogger } from '../utils/Logger'
 
 const logger = getLogger('DiaryRepository')

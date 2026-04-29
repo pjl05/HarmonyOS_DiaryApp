@@ -3,7 +3,7 @@
  * 替换 Android: ChatManagementActivity
  */
 import { preferences } from '@kit.ArkData'
-import { router } from '@kit.RouterKit'
+import router from '@ohos.router'
 
 const PREF_NAME = 'chat_settings'
 const KEY_AI_NAME = 'ai_name'
@@ -22,7 +22,7 @@ export struct ChatManagementPage {
 
   async aboutToAppear(): Promise<void> {
     const ctx = getContext(this)
-    this.prefs = preferences.getPreferences(ctx, { name: PREF_NAME })
+    this.prefs = await preferences.getPreferences(ctx, { name: PREF_NAME })
     await this.loadSettings()
   }
 
@@ -46,39 +46,27 @@ export struct ChatManagementPage {
     NavDestination() {
       Scroll() {
         Column({ space: 12 }) {
-          this.buildSection('AI 名称', [
-            this.buildInputRow('名称', this.aiName, (val) => { this.aiName = val })
-          ])
-
-          this.buildSection('系统提示词', [
-            this.buildTextAreaRow('提示词', this.roleSetting, (val) => { this.roleSetting = val })
-          ])
-
-          this.buildSection('历史记录限制', [
-            this.buildSliderRow('读取最近 N 条消息', this.chatHistoryLimit, (val) => { this.chatHistoryLimit = val }, 0, 50)
-          ])
-
-          this.buildSection('日记读取限制', [
-            this.buildSliderRow('读取最近 N 篇日记', this.aiDiaryReadLimit, (val) => { this.aiDiaryReadLimit = val }, 1, 100)
-          ])
+          this.buildAINameSection()
+          this.buildRoleSection()
+          this.buildHistoryLimitSection()
+          this.buildDiaryReadLimitSection()
         }
         .width('100%')
         .padding(16)
       }
     }
     .title('AI 设置')
-    .titleMode(NavDestinationTitleMode.Medium)
     .onBackPressed(() => {
       this.saveSettings()
-      router.pop()
+      router.back()
       return true
     })
   }
 
   @Builder
-  buildSection(title: string, items: ESObject[]): Column {
-    return Column() {
-      Text(title)
+  buildAINameSection() {
+    Column() {
+      Text('AI 名称')
         .fontSize(13)
         .fontColor('#FF999999')
         .fontWeight(FontWeight.Medium)
@@ -86,7 +74,17 @@ export struct ChatManagementPage {
         .margin({ bottom: 8, top: 16 })
 
       Column() {
-        items.forEach((item: ESObject) => item())
+        Row() {
+          Text('名称').fontSize(15).fontColor('#FF333333')
+          Blank()
+          TextInput({ text: this.aiName })
+            .fontSize(14)
+            .textAlign(TextAlign.End)
+            .width(200)
+            .onChange((val: string) => { this.aiName = val })
+        }
+        .width('100%')
+        .height(48)
       }
       .width('100%')
       .backgroundColor('#FFFFFFFF')
@@ -96,55 +94,97 @@ export struct ChatManagementPage {
   }
 
   @Builder
-  buildInputRow(label: string, value: string, onChange: (v: string) => void): Row {
-    return Row() {
-      Text(label).fontSize(15).fontColor('#FF333333')
-      Blank()
-      TextInput({ text: value })
-        .fontSize(14)
-        .textAlign(TextAlign.End)
-        .width(200)
-        .onChange((v) => onChange(v))
-    }
-    .width('100%')
-    .height(48)
-  }
-
-  @Builder
-  buildTextAreaRow(label: string, value: string, onChange: (v: string) => void): Column {
-    return Column() {
-      Text(label).fontSize(15).fontColor('#FF333333').width('100%').margin({ bottom: 8 })
-      TextArea({ text: value })
-        .fontSize(14)
-        .height(100)
+  buildRoleSection() {
+    Column() {
+      Text('系统提示词')
+        .fontSize(13)
+        .fontColor('#FF999999')
+        .fontWeight(FontWeight.Medium)
         .width('100%')
-        .onChange((v) => onChange(v))
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
-  }
+        .margin({ bottom: 8, top: 16 })
 
-  @Builder
-  buildSliderRow(label: string, currentValue: number, onChange: (v: number) => void, min: number, max: number): Column {
-    return Column() {
-      Row() {
-        Text(label).fontSize(15).fontColor('#FF333333')
-        Blank()
-        Text(`${currentValue}`).fontSize(14).fontColor('#FF4A90D9')
+      Column() {
+        Text('提示词').fontSize(15).fontColor('#FF333333').width('100%').margin({ bottom: 8 })
+        TextArea({ text: this.roleSetting })
+          .fontSize(14)
+          .height(100)
+          .width('100%')
+          .onChange((val: string) => { this.roleSetting = val })
       }
       .width('100%')
-
-      Slider({
-        value: currentValue,
-        min: min,
-        max: max,
-        step: 1,
-        style: SliderStyle.OutSet
-      })
-        .width('100%')
-        .onChange((val) => onChange(Math.round(val)))
+      .backgroundColor('#FFFFFFFF')
+      .borderRadius(12)
+      .padding(12)
     }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
+  }
+
+  @Builder
+  buildHistoryLimitSection() {
+    Column() {
+      Text('历史记录限制')
+        .fontSize(13)
+        .fontColor('#FF999999')
+        .fontWeight(FontWeight.Medium)
+        .width('100%')
+        .margin({ bottom: 8, top: 16 })
+
+      Column() {
+        Row() {
+          Text('读取最近 N 条消息').fontSize(15).fontColor('#FF333333')
+          Blank()
+          Text(`${this.chatHistoryLimit}`).fontSize(14).fontColor('#FF4A90D9')
+        }
+        .width('100%')
+
+        Slider({
+          value: this.chatHistoryLimit,
+          min: 0,
+          max: 50,
+          step: 1,
+          style: SliderStyle.OutSet
+        })
+          .width('100%')
+          .onChange((val: number) => { this.chatHistoryLimit = Math.round(val) })
+      }
+      .width('100%')
+      .backgroundColor('#FFFFFFFF')
+      .borderRadius(12)
+      .padding(12)
+    }
+  }
+
+  @Builder
+  buildDiaryReadLimitSection() {
+    Column() {
+      Text('日记读取限制')
+        .fontSize(13)
+        .fontColor('#FF999999')
+        .fontWeight(FontWeight.Medium)
+        .width('100%')
+        .margin({ bottom: 8, top: 16 })
+
+      Column() {
+        Row() {
+          Text('读取最近 N 篇日记').fontSize(15).fontColor('#FF333333')
+          Blank()
+          Text(`${this.aiDiaryReadLimit}`).fontSize(14).fontColor('#FF4A90D9')
+        }
+        .width('100%')
+
+        Slider({
+          value: this.aiDiaryReadLimit,
+          min: 1,
+          max: 100,
+          step: 1,
+          style: SliderStyle.OutSet
+        })
+          .width('100%')
+          .onChange((val: number) => { this.aiDiaryReadLimit = Math.round(val) })
+      }
+      .width('100%')
+      .backgroundColor('#FFFFFFFF')
+      .borderRadius(12)
+      .padding(12)
+    }
   }
 }

@@ -4,24 +4,24 @@
  * 支持 CARD（轮播卡片）/ TIMELINE（时间轴）/ ALBUM（相册）三种视图
  */
 import router from '@ohos.router'
-import AppStorage from '@ohos.appexecfgmodel'
+import { DayPagerViewModel, ViewMode } from '../../viewmodel/DayPagerViewModel'
+import { DayRepository } from '../../data/repository/DayRepository'
+import { DayDao } from '../../data/dao/DayDao'
+import { DayItem } from '../../model/DayItem'
+import { DayCard } from '../../components/day/DayCard'
+import { DayTimelineCard } from '../../components/day/DayTimelineCard'
+import { DayAlbumSection } from '../../components/day/DayAlbumSection'
+import { TimelineSection } from '../../components/day/DayTimelineModels'
 import relationalStore from '@ohos.data.relationalStore'
-import { DayPagerViewModel, ViewMode } from '../viewmodel/DayPagerViewModel'
-import { DayRepository } from '../data/repository/DayRepository'
-import { DayDao } from '../data/dao/DayDao'
-import { DayItem } from '../model/DayItem'
-import { DayCard } from '../components/day/DayCard'
-import { DayTimelineCard } from '../components/day/DayTimelineCard'
-import { DayAlbumSection } from '../components/day/DayAlbumSection'
-import { TimelineSection } from '../components/day/DayTimelineModels'
+import { SimpleStorage } from '../../utils/SimpleStorage'
 
 const USER_ID = 'default_user'
 
 @Entry
 @Component
-struct DayPagerPage {
+export struct DayPagerPage {
   @State private vm: DayPagerViewModel = new DayPagerViewModel(
-    new DayRepository(new DayDao(AppStorage.get('dayRdb') as relationalStore.RdbStore))
+    new DayRepository(new DayDao(SimpleStorage.get('dayRdb') as relationalStore.RdbStore))
   )
   @State private currentIndex: number = 0
 
@@ -56,7 +56,7 @@ struct DayPagerPage {
 
       Blank()
 
-      Image(this.viewModeIcon())
+      Image(this.getViewModeIcon())
         .width(24)
         .height(24)
         .fillColor('#2C3E50')
@@ -108,15 +108,7 @@ struct DayPagerPage {
         }, (item: DayItem) => item.id.toString())
       }
       .index(this.currentIndex)
-      .indicator(
-        new SwiperIndicator()
-          .indicatorDotStyle({
-            selectedColor: '#2C3E50',
-            color: '#E0E0E0',
-            size: 8,
-            mask: true
-          })
-      })
+      .indicator(true)
       .loop(false)
       .onChange((index: number) => {
         this.currentIndex = index
@@ -135,7 +127,7 @@ struct DayPagerPage {
             ListItem() {
               DayTimelineCard({
                 item: item,
-                onDelete: (id: number) => this.vm.deleteDay(id)
+                onDelete: (id: number): void => { this.vm.deleteDay(id) }
               })
             }
           }, (item: DayItem) => item.id.toString())
@@ -165,7 +157,7 @@ struct DayPagerPage {
       .padding({ top: 16, bottom: 8 })
   }
 
-  private viewModeIcon(): Resource {
+  private getViewModeIcon(): Resource {
     if (this.vm.viewMode === ViewMode.CARD) {
       return $r('app.media.ic_view_card')
     } else if (this.vm.viewMode === ViewMode.TIMELINE) {

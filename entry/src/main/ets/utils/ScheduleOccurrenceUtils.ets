@@ -12,10 +12,10 @@ export class ScheduleOccurrenceUtils {
     }
 
     switch (item.repeatType) {
-      case 'DAILY': return this.nextDaily(item, nowMillis)
-      case 'WEEKLY': return this.nextWeekly(item, nowMillis)
-      case 'MONTHLY': return this.nextMonthly(item, nowMillis)
-      case 'YEARLY': return this.nextYearly(item, nowMillis)
+      case 'DAILY': return ScheduleOccurrenceUtils.nextDaily(item, nowMillis)
+      case 'WEEKLY': return ScheduleOccurrenceUtils.nextWeekly(item, nowMillis)
+      case 'MONTHLY': return ScheduleOccurrenceUtils.nextMonthly(item, nowMillis)
+      case 'YEARLY': return ScheduleOccurrenceUtils.nextYearly(item, nowMillis)
       default: return item.scheduledAt
     }
   }

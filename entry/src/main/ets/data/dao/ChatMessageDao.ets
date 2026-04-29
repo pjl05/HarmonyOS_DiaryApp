@@ -3,14 +3,14 @@
  * 替换 Android: ChatMessageDao (Room @Dao)
  * 使用 HarmonyOS Relational DB
  */
-import { relational } from '@kit.ArkData'
+import relationalStore from '@ohos.data.relationalStore'
 import { ChatMessage } from '../../model/ChatMessageModel'
 
 const STORE_NAME = 'diary_chat.db'
 const TABLE_NAME = 'chat_messages'
 
 class ChatMessageDao {
-  private db: relational.RdbStore | null = null
+  private db: relationalStore.RdbStore | null = null
   private initPromise: Promise<void> | null = null
 
   async init(): Promise<void> {
@@ -23,11 +23,11 @@ class ChatMessageDao {
 
   private async doInit(): Promise<void> {
     const ctx = getContext(this) as Context
-    const config: relational.StoreConfig = {
+    const config: relationalStore.StoreConfig = {
       name: STORE_NAME,
-      securityLevel: relational.SecurityLevel.S1
+      securityLevel: relationalStore.SecurityLevel.S1
     }
-    this.db = await relational.getRdbStore(ctx, config)
+    this.db = await relationalStore.getRdbStore(ctx, config)
 
     await this.db.executeSql(`
       CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
@@ -44,14 +44,14 @@ class ChatMessageDao {
     `)
   }
 
-  private async ensureDb(): Promise<relational.RdbStore> {
+  private async ensureDb(): Promise<relationalStore.RdbStore> {
     await this.init()
     return this.db!
   }
 
   async getAllMessages(sessionId: string): Promise<ChatMessage[]> {
     const db = await this.ensureDb()
-    const predicates = new relational.RdbPredicates(TABLE_NAME)
+    const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
       .equalTo('sessionId', sessionId)
       .orderByAsc('timestamp')
     const result = await db.query(predicates)
@@ -60,7 +60,7 @@ class ChatMessageDao {
 
   async getRecentMessages(sessionId: string, limit: number): Promise<ChatMessage[]> {
     const db = await this.ensureDb()
-    const predicates = new relational.RdbPredicates(TABLE_NAME)
+    const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
       .equalTo('sessionId', sessionId)
       .orderByDesc('timestamp')
       .limitAs(limit)
@@ -71,7 +71,7 @@ class ChatMessageDao {
 
   async insert(message: ChatMessage): Promise<number> {
     const db = await this.ensureDb()
-    const values: relational.ValuesBucket = {
+    const values: relationalStore.ValuesBucket = {
       message: message.message,
       role: message.role,
       timestamp: message.timestamp,
@@ -82,32 +82,35 @@ class ChatMessageDao {
 
   async updateMessageContent(id: number, content: string): Promise<void> {
     const db = await this.ensureDb()
-    const values: relational.ValuesBucket = {
+    const values: relationalStore.ValuesBucket = {
       message: content
     }
-    const predicates = new relational.RdbPredicates(TABLE_NAME).equalTo('id', id)
-    await db.update(TABLE_NAME, values, predicates)
+    const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
+    predicates.equalTo('id', id)
+    await db.update(values, predicates)
   }
 
   async deleteById(id: number): Promise<void> {
     const db = await this.ensureDb()
-    const predicates = new relational.RdbPredicates(TABLE_NAME).equalTo('id', id)
-    await db.delete(TABLE_NAME, predicates)
+    const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
+    predicates.equalTo('id', id)
+    await db.delete(predicates)
   }
 
   async clearAll(sessionId: string): Promise<void> {
     const db = await this.ensureDb()
-    const predicates = new relational.RdbPredicates(TABLE_NAME).equalTo('sessionId', sessionId)
-    await db.delete(TABLE_NAME, predicates)
+    const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
+    predicates.equalTo('sessionId', sessionId)
+    await db.delete(predicates)
   }
 
   async getLastUserTimestamp(sessionId: string): Promise<number | null> {
     const db = await this.ensureDb()
-    const predicates = new relational.RdbPredicates(TABLE_NAME)
-      .equalTo('sessionId', sessionId)
-      .equalTo('role', 'user')
-      .orderByDesc('timestamp')
-      .limitAs(1)
+    const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
+    predicates.equalTo('sessionId', sessionId)
+    predicates.equalTo('role', 'user')
+    predicates.orderByDesc('timestamp')
+    predicates.limitAs(1)
     const result = await db.query(predicates)
     if (result.goToFirstRow()) {
       const ts = result.getLong(result.getColumnIndex('timestamp'))
@@ -120,11 +123,11 @@ class ChatMessageDao {
 
   async getLastAssistantTimestamp(sessionId: string): Promise<number | null> {
     const db = await this.ensureDb()
-    const predicates = new relational.RdbPredicates(TABLE_NAME)
-      .equalTo('sessionId', sessionId)
-      .equalTo('role', 'assistant')
-      .orderByDesc('timestamp')
-      .limitAs(1)
+    const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
+    predicates.equalTo('sessionId', sessionId)
+    predicates.equalTo('role', 'assistant')
+    predicates.orderByDesc('timestamp')
+    predicates.limitAs(1)
     const result = await db.query(predicates)
     if (result.goToFirstRow()) {
       const ts = result.getLong(result.getColumnIndex('timestamp'))
@@ -135,7 +138,7 @@ class ChatMessageDao {
     return null
   }
 
-  private rowsToMessages(result: relational.ResultSet): ChatMessage[] {
+  private rowsToMessages(result: relationalStore.ResultSet): ChatMessage[] {
     const messages: ChatMessage[] = []
     while (result.goToNextRow()) {
       messages.push({

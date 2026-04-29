@@ -8,7 +8,7 @@ import { ChatMessageWrapper } from './MessageBubbleUser'
 import { MessageBubbleUser } from './MessageBubbleUser'
 import { MessageBubbleAi } from './MessageBubbleAi'
 import { ChatInputBar } from './ChatInputBar'
-import { router } from '@kit.RouterKit'
+import router from '@ohos.router'
 
 @Component
 export struct ChatPage {
@@ -22,17 +22,14 @@ export struct ChatPage {
   }
 
   private syncWrappers(): void {
-    this.wrappers = this.viewModel.messages.map(m => new ChatMessageWrapper(m))
+    this.wrappers = this.viewModel.messages.map((m: ChatMessage) => new ChatMessageWrapper(m))
   }
 
   build() {
     NavDestination() {
       Column() {
-        // 顶部栏
         this.buildTopBar()
-
-        // 消息列表
-        List({ initialIndex: 0 }) {
+        List() {
           ForEach(this.wrappers, (wrapper: ChatMessageWrapper) => {
             ListItem() {
               this.buildMessageItem(wrapper)
@@ -44,7 +41,6 @@ export struct ChatPage {
         .scrollBar(BarState.Off)
         .alignListItem(ListItemAlign.Center)
 
-        // 输入栏
         ChatInputBar({
           inputText: $viewModel.inputText,
           isLoading: $viewModel.isLoading,
@@ -60,7 +56,6 @@ export struct ChatPage {
       .backgroundColor('#FFF5F5F5')
     }
     .title('AI 聊天')
-    .titleMode(NavDestinationTitleMode.Medium)
   }
 
   @Builder

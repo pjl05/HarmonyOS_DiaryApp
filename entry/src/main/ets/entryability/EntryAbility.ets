@@ -1,7 +1,8 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { window, AppStorage } from '@kit.ArkUI';
+import { window } from '@kit.ArkUI';
 import { DayDao } from '../data/dao/DayDao';
+import { SimpleStorage } from '../utils/SimpleStorage';
 import relationalStore from '@ohos.data.relationalStore';
 
 const DOMAIN = 0x0000;
@@ -32,7 +33,7 @@ export default class EntryAbility extends UIAbility {
     relationalStore.getRdbStore(this.context, DAY_DB_CONFIG).then(async (rdb) => {
       const dayDao = new DayDao(rdb)
       await dayDao.createTable()
-      AppStorage.setOrCreate('dayRdb', rdb)
+      SimpleStorage.set('dayRdb', rdb)
     })
 
     windowStage.loadContent('pages/Index', (err) => {

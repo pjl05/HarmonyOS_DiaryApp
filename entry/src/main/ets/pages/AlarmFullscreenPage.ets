@@ -4,7 +4,7 @@
  */
 import router from '@ohos.router'
 import window from '@ohos.window'
-import { emitter } from '@ohos.events.emitter'
+import emitter from '@ohos.events.emitter'
 
 @Entry
 @Component
@@ -16,7 +16,7 @@ struct AlarmFullscreenPage {
   private timerId: number = -1
   private scheduleId: number = 0
 
-  aboutToAppear() {
+  aboutToAppear(): void {
     const params = router.getParams() as Record<string, string | number>
     this.scheduleId = params?.scheduleId as number || 0
     this.scheduleTitle = params?.title as string || '日程提醒'
@@ -27,25 +27,29 @@ struct AlarmFullscreenPage {
     this.setKeepScreenOn(true)
   }
 
-  aboutToDisappear() {
+  aboutToDisappear(): void {
     if (this.timerId !== -1) {
       clearInterval(this.timerId)
     }
     this.setKeepScreenOn(false)
   }
 
-  private async setKeepScreenOn(on: boolean) {
+  private async setKeepScreenOn(on: boolean): Promise<void> {
     try {
-      const context = AppStorage.get<Context>('appContext')!
-      const win = await window.getLastWindow(context)
+      const ctx = getContext(this)
+      const win = await window.getLastWindow(ctx)
       await win.setKeepScreenOn(on)
     } catch (_) {}
   }
 
-  private updateTime() {
+  private updateTime(): void {
     const now = new Date()
-    this.currentTime = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    this.currentDate = now.toLocaleDateString('zh-CN', { weekday: 'long', month: 'long', day: 'numeric' })
+    const hours = now.getHours().toString().padStart(2, '0')
+    const minutes = now.getMinutes().toString().padStart(2, '0')
+    this.currentTime = `${hours}:${minutes}`
+    const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    this.currentDate = `${weekdays[now.getDay()]} ${months[now.getMonth()]}${now.getDate()}日`
   }
 
   build() {
@@ -76,7 +80,7 @@ struct AlarmFullscreenPage {
         Text(this.currentTime)
           .fontSize(72)
           .fontColor('#FFF')
-          .fontWeight(FontWeight.Light)
+          .fontWeight(200)
 
         Text(this.currentDate)
           .fontSize(16)
@@ -119,7 +123,7 @@ struct AlarmFullscreenPage {
     }
   }
 
-  private stopAlarm() {
+  private stopAlarm(): void {
     if (this.scheduleId > 0) {
       emitter.emit({ eventId: this.scheduleId })
     }

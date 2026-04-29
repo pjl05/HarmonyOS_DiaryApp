@@ -21,11 +21,11 @@ const KEY_AI_CONFIG_MODE = 'ai_config_mode'
 
 @Observed
 export class ChatViewModel {
-  @State messages: ChatMessage[] = []
-  @State inputText: string = ''
-  @State isLoading: boolean = false
-  @State currentSessionId: string = ''
-  @State aiName: string = 'AI Companion'
+  messages: ChatMessage[] = []
+  inputText: string = ''
+  isLoading: boolean = false
+  currentSessionId: string = ''
+  aiName: string = 'AI Companion'
 
   aiRolePresetId: number = 0
   roleSetting: string = ''
@@ -45,7 +45,7 @@ export class ChatViewModel {
 
   async loadSettings(): Promise<void> {
     const ctx = getContext(this)
-    this.prefs = preferences.getPreferences(ctx, { name: PREF_NAME })
+    this.prefs = await preferences.getPreferences(ctx, { name: PREF_NAME })
     this.aiRolePresetId = await this.prefs.get(KEY_AI_ROLE_PRESET_ID, 0) as number
     this.aiName = await this.prefs.get(KEY_AI_NAME, 'AI Companion') as string
     this.roleSetting = await this.prefs.get(KEY_ROLE_SETTING, '') as string
@@ -82,7 +82,7 @@ export class ChatViewModel {
 
     try {
       const userMsg = await chatRepository.sendUserMessage(text, this.currentSessionId)
-      this.messages = [...this.messages, userMsg]
+      this.messages = this.messages.concat(userMsg)
 
       this.currentAiMessageId = -1
       this.currentAiContent = ''
@@ -90,7 +90,7 @@ export class ChatViewModel {
       const aiMsg = await chatRepository.insertAiMessage('', this.currentSessionId)
       this.currentAiMessageId = aiMsg.id
       this.currentAiContent = ''
-      this.messages = [...this.messages, aiMsg]
+      this.messages = this.messages.concat(aiMsg)
 
       await this.callAiService(text, (chunk: string, done: boolean) => {
         if (done) {
@@ -107,7 +107,8 @@ export class ChatViewModel {
       hilog.error(0, TAG, 'sendMessage error: %{public}s', JSON.stringify(e))
       if (this.currentAiMessageId > 0) {
         await chatRepository.deleteMessage(this.currentAiMessageId)
-        this.messages = this.messages.filter(m => m.id !== this.currentAiMessageId)
+        const deletedId = this.currentAiMessageId
+        this.messages = this.messages.filter((m: ChatMessage) => m.id !== deletedId)
       }
     } finally {
       this.isLoading = false
@@ -119,7 +120,8 @@ export class ChatViewModel {
     if (this.messages.length === 0) return
     const last = this.messages[this.messages.length - 1]
     if (last.role === 'assistant' && last.id === this.currentAiMessageId) {
-      this.messages = [...this.messages.slice(0, -1), { ...last, message: this.currentAiContent }]
+      const updated: ChatMessage = { id: last.id, message: this.currentAiContent, role: last.role, timestamp: last.timestamp, sessionId: last.sessionId }
+      this.messages = this.messages.slice(0, -1).concat(updated)
     }
   }
 
@@ -134,7 +136,7 @@ export class ChatViewModel {
     // 模拟流式 AI 回复（后续替换为 AiChatService WebSocket）
     const response = `这是一条模拟 AI 回复：${userMessage}`
     for (let i = 0; i < response.length; i += 5) {
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise<void>(resolve => setTimeout(resolve, 50))
       onChunk(response.slice(i, i + 5), false)
     }
     onChunk('', true)

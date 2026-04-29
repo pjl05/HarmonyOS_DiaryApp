@@ -17,7 +17,7 @@ export function getHolidayName(dateMillis: number): string | null {
   if (month === 5 && day === 1) return '劳动节';
   if (month === 10 && day === 1) return '国庆节';
   if (month === 4 && day === qingmingDay(year)) return '清明节';
-  if (month !in [1, 2, 5, 6, 9, 10]) return null;
+  if (![1, 2, 5, 6, 9, 10].includes(month)) return null;
 
   const lunar: LunarDate = solarToLunar(year, month, day);
   if (lunar.month === 1 && lunar.day === 1) return '春节';

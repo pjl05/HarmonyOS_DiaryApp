@@ -4,7 +4,7 @@
  * 包含标题编辑、内容、天气心情选择、日期选择、图片添加、自动草稿保存
  */
 import router from '@ohos.router'
-import { AppStorage } from '@kit.ArkData'
+import { SimpleStorage } from '../../utils/SimpleStorage'
 import promptAction from '@ohos.promptAction'
 import { DiaryEditViewModel } from '../../viewmodel/DiaryEditViewModel'
 import { WeatherPicker } from '../../components/WeatherPicker'
@@ -33,7 +33,7 @@ struct DiaryEditPage {
     this.vm = new DiaryEditViewModel(getContext(this), diaryId)
 
     if (diaryId > 0) {
-      this.vm.loadDiary(diaryId).then((): void => {
+      this.vm.loadDiary(diaryId).then(() => {
         this.title = this.vm!.diary.title
         this.content = this.vm!.diary.content
         this.mood = this.vm!.diary.mood
@@ -41,7 +41,7 @@ struct DiaryEditPage {
         this.dateText = this.formatDate(this.vm!.diary.date)
       })
     } else if (draftId > 0) {
-      this.vm.loadFromDraft(draftId).then((): void => {
+      this.vm.loadFromDraft(draftId).then(() => {
         this.title = this.vm!.diary.title
         this.content = this.vm!.diary.content
         this.mood = this.vm!.diary.mood
@@ -80,7 +80,7 @@ struct DiaryEditPage {
       const success = await this.vm.publish()
       if (success) {
         promptAction.showToast({ message: '保存成功' })
-        AppStorage.set('diary_saved', true)
+        SimpleStorage.set('diary_saved', true)
         router.back()
       } else {
         promptAction.showToast({ message: '标题或内容不能全为空' })

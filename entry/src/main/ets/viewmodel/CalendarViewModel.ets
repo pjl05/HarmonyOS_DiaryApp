@@ -11,11 +11,11 @@ const END_YEAR = 2099;
 
 @Observed
 export class CalendarViewModel {
-  @State cells: CalendarCell[] = [];
-  @State dayStates: Map<number, CalendarDayState> = new Map();
-  @State visibleYearMonth: string = '';
-  @State zoomScale: number = 1.0;
-  @State selectedDateMillis: number = 0;
+  cells: CalendarCell[] = [];
+  dayStates: Map<number, CalendarDayState> = new Map();
+  visibleYearMonth: string = '';
+  zoomScale: number = 1.0;
+  selectedDateMillis: number = 0;
 
   private monthStartIndexMap: Map<number, number> = new Map();
   private dayIndexMap: Map<number, number> = new Map();
@@ -117,13 +117,21 @@ export class CalendarViewModel {
   }
 
   setZoomScale(scale: number): void {
-    this.zoomScale = scale.coerceIn(1.0, 2.5);
+    this.zoomScale = Math.min(2.5, Math.max(1.0, scale));
   }
 
   updateDayState(dayKey: number, updates: Partial<CalendarDayState>): void {
     const existing = this.dayStates.get(dayKey);
     if (existing) {
-      this.dayStates.set(dayKey, { ...existing, ...updates });
+      const newState: CalendarDayState = {
+        cell: updates.cell !== undefined ? updates.cell : existing.cell,
+        diaryInfo: updates.diaryInfo !== undefined ? updates.diaryInfo : existing.diaryInfo,
+        scheduleInfo: updates.scheduleInfo !== undefined ? updates.scheduleInfo : existing.scheduleInfo,
+        holidayName: updates.holidayName !== undefined ? updates.holidayName : existing.holidayName,
+        isToday: updates.isToday !== undefined ? updates.isToday : existing.isToday,
+        isSelected: updates.isSelected !== undefined ? updates.isSelected : existing.isSelected
+      }
+      this.dayStates.set(dayKey, newState)
     } else {
       const cell = this.cells.find(c => c.dayKey === dayKey);
       if (!cell) return;
@@ -134,12 +142,11 @@ export class CalendarViewModel {
         today.getDate() === cellDate.getDate();
       this.dayStates.set(dayKey, {
         cell,
-        diaryInfo: null,
-        scheduleInfo: null,
-        holidayName: null,
+        diaryInfo: updates.diaryInfo !== undefined ? updates.diaryInfo : null,
+        scheduleInfo: updates.scheduleInfo !== undefined ? updates.scheduleInfo : null,
+        holidayName: updates.holidayName !== undefined ? updates.holidayName : null,
         isToday,
-        isSelected: false,
-        ...updates
+        isSelected: updates.isSelected !== undefined ? updates.isSelected : false
       });
     }
   }
@@ -154,5 +161,9 @@ export class CalendarViewModel {
 
   setHolidayName(dayKey: number, name: string | null): void {
     this.updateDayState(dayKey, { holidayName: name });
+  }
+
+  getDayIndex(dayKey: number): number | undefined {
+    return this.dayIndexMap.get(dayKey);
   }
 }

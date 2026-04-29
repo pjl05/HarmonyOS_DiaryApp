@@ -3,6 +3,7 @@
  * 对标 Android: ScheduleActivity
  */
 import router from '@ohos.router'
+import { SimpleStorage } from '../utils/SimpleStorage'
 import { ScheduleListViewModel } from '../viewmodel/ScheduleListViewModel'
 import { ScheduleCard, ScheduleItemWrapper } from '../components/ScheduleCard'
 import { ScheduleItem } from '../models/ScheduleItem'
@@ -21,9 +22,9 @@ struct ScheduleListPage {
   }
 
   async initRepository() {
-    const context = AppStorage.get<Context>('appContext')!
+    const context = SimpleStorage.get<Context>('appContext')!
     const dao = new ScheduleDao(context)
-    const userId = AppStorage.get<string>('userId') || 'default'
+    const userId = SimpleStorage.get<string>('userId') || 'default'
     this.repository = new ScheduleRepository(dao, userId)
     await this.viewModel.init(this.repository)
   }
@@ -51,8 +52,8 @@ struct ScheduleListPage {
             ListItem() {
               ScheduleCard({
                 item: ScheduleItemWrapper.from(item),
-                onClick: (s) => this.viewModel.openScheduleDetail(s),
-                onDelete: (s) => this.handleDelete(s)
+                onCardClick: (wrapper: ScheduleItemWrapper): void => this.viewModel.openScheduleDetailById(wrapper.id),
+                onCardDelete: (wrapper: ScheduleItemWrapper) => this.handleDelete(wrapper)
               })
             }
           })
@@ -75,7 +76,7 @@ struct ScheduleListPage {
     .backgroundColor('#F5F5F5')
   }
 
-  async handleDelete(item: ScheduleItem) {
+  async handleDelete(wrapper: ScheduleItemWrapper) {
     const action = await promptAction.showActionMenu({
       title: '删除日程',
       buttons: [
@@ -84,7 +85,7 @@ struct ScheduleListPage {
       ]
     })
     if (action.index === 0) {
-      await this.viewModel.deleteSchedule(item)
+      await this.viewModel.deleteScheduleById(wrapper.id)
     }
   }
 }

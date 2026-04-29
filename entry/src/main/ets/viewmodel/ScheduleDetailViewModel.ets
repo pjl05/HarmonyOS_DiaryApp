@@ -2,37 +2,38 @@
  * ScheduleDetailViewModel - 日程详情 VM
  * 对标 Android: ScheduleViewActivity
  */
-import { ScheduleItem } from '../models/ScheduleItem'
+import { ScheduleItem, ScheduleItemInterface } from '../models/ScheduleItem'
 import { ScheduleRepository } from '../data/ScheduleRepository'
 import { ReminderService } from '../services/ReminderService'
 import promptAction from '@ohos.promptAction'
 import router from '@ohos.router'
 
-class ScheduleDetailViewModel {
-  @State scheduleId: number = 0
-  @State title: string = ''
-  @State content: string = ''
-  @State scheduledAt: number = Date.now()
-  @State repeatType: string = 'NONE'
-  @State repeatYearly: boolean = false
-  @State repeatByLunar: boolean = false
-  @State repeatMonth: number = 0
-  @State repeatDayOfMonth: number = 1
-  @State repeatWeekday: number = 1
-  @State repeatHour: number = -1
-  @State repeatMinute: number = 0
-  @State lunarMonth: number = 0
-  @State lunarDay: number = 0
-  @State lunarLeap: boolean = false
-  @State mood: string = ''
-  @State weather: string = ''
-  @State location: string = ''
-  @State isLoading: boolean = false
-  @State isEditing: boolean = true
+@Observed
+export class ScheduleDetailViewModel {
+  scheduleId: number = 0
+  title: string = ''
+  content: string = ''
+  scheduledAt: number = Date.now()
+  repeatType: string = 'NONE'
+  repeatYearly: boolean = false
+  repeatByLunar: boolean = false
+  repeatMonth: number = 0
+  repeatDayOfMonth: number = 1
+  repeatWeekday: number = 1
+  repeatHour: number = -1
+  repeatMinute: number = 0
+  lunarMonth: number = 0
+  lunarDay: number = 0
+  lunarLeap: boolean = false
+  mood: string = ''
+  weather: string = ''
+  location: string = ''
+  isLoading: boolean = false
+  isEditing: boolean = true
 
   private repository: ScheduleRepository | null = null
 
-  async init(repository: ScheduleRepository, scheduleId: number) {
+  async init(repository: ScheduleRepository, scheduleId: number): Promise<void> {
     this.repository = repository
     this.scheduleId = scheduleId
     this.isEditing = scheduleId === 0
@@ -68,7 +69,7 @@ class ScheduleDetailViewModel {
     }
   }
 
-  async save() {
+  async save(): Promise<void> {
     if (!this.repository) return
     if (this.title.trim().length === 0) {
       promptAction.showToast({ message: '请输入标题' })
@@ -77,13 +78,17 @@ class ScheduleDetailViewModel {
 
     this.isLoading = true
     try {
-      const data: Partial<ScheduleItem> = {
+      const data: ScheduleItemInterface = {
+        id: this.scheduleId > 0 ? this.scheduleId : 0,
+        userId: '',
         title: this.title.trim(),
         content: this.content,
         scheduledAt: this.scheduledAt,
-        repeatType: this.repeatType as any,
         repeatYearly: this.repeatYearly,
         repeatByLunar: this.repeatByLunar,
+        repeatType: this.repeatType as 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | 'CUSTOM',
+        repeatRangeStart: null,
+        repeatRangeEnd: null,
         repeatMonth: this.repeatMonth,
         repeatDayOfMonth: this.repeatDayOfMonth,
         repeatWeekday: this.repeatWeekday,
@@ -92,9 +97,13 @@ class ScheduleDetailViewModel {
         lunarMonth: this.lunarMonth,
         lunarDay: this.lunarDay,
         lunarLeap: this.lunarLeap,
+        author: null,
         mood: this.mood || null,
         weather: this.weather || null,
-        location: this.location || null
+        location: this.location || null,
+        createdAt: 0,
+        updatedAt: Date.now(),
+        previewContentPriority: 'text'
       }
 
       if (this.scheduleId > 0) {
@@ -104,7 +113,27 @@ class ScheduleDetailViewModel {
         await ReminderService.schedule(new ScheduleItem(data), 5)
       } else {
         const id = await this.repository.insert(data)
-        await ReminderService.schedule(new ScheduleItem({ ...data, id }), 5)
+        const newItem = new ScheduleItem({
+          id: id,
+          title: data.title!,
+          content: data.content!,
+          scheduledAt: data.scheduledAt!,
+          repeatType: data.repeatType!,
+          repeatYearly: data.repeatYearly!,
+          repeatByLunar: data.repeatByLunar!,
+          repeatMonth: data.repeatMonth!,
+          repeatDayOfMonth: data.repeatDayOfMonth!,
+          repeatWeekday: data.repeatWeekday!,
+          repeatHour: data.repeatHour!,
+          repeatMinute: data.repeatMinute!,
+          lunarMonth: data.lunarMonth!,
+          lunarDay: data.lunarDay!,
+          lunarLeap: data.lunarLeap!,
+          mood: data.mood,
+          weather: data.weather,
+          location: data.location
+        })
+        await ReminderService.schedule(newItem, 5)
       }
 
       promptAction.showToast({ message: '保存成功' })
@@ -116,13 +145,11 @@ class ScheduleDetailViewModel {
     }
   }
 
-  setDate(millis: number) {
+  setDate(millis: number): void {
     this.scheduledAt = millis
   }
 
-  setRepeat(type: string) {
+  setRepeat(type: string): void {
     this.repeatType = type
   }
 }
-
-export { ScheduleDetailViewModel }

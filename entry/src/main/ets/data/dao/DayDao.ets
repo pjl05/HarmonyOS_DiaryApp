@@ -54,7 +54,8 @@ export class DayDao {
 
   async queryAll(userId: string): Promise<DayItem[]> {
     const predicates = new relationalStore.RdbPredicates(TABLE)
-    predicates.equalTo('userId', userId).orderByDesc('startAt')
+    predicates.equalTo('userId', userId)
+    predicates.orderByDesc('startAt')
     const cursor = await this.rdb.query(predicates)
     const items: DayItem[] = []
     while (cursor.goToNextRow()) {

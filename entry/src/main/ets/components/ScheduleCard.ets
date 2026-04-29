@@ -7,8 +7,8 @@ import { ScheduleItem } from '../models/ScheduleItem'
 @Component
 export struct ScheduleCard {
   @ObjectLink item: ScheduleItemWrapper
-  onClick?: (item: ScheduleItem) => void
-  onDelete?: (item: ScheduleItem) => void
+  onCardClick?: (item: ScheduleItemWrapper) => void
+  onCardDelete?: (item: ScheduleItemWrapper) => void
 
   build() {
     Column() {
@@ -53,10 +53,10 @@ export struct ScheduleCard {
           .fontColor('#E53935')
           .backgroundColor(Color.Transparent)
           .onClick(() => {
-            if (this.onDelete) {
-              this.onDelete(this.item)
-            }
-          })
+          if (this.onCardDelete) {
+            this.onCardDelete(this.item)
+          }
+        })
       }
       .width('100%')
       .margin({ top: 8 })
@@ -72,21 +72,20 @@ export struct ScheduleCard {
       offsetY: 2
     })
     .onClick(() => {
-      if (this.onClick) {
-        this.onClick(this.item)
+      if (this.onCardClick) {
+        this.onCardClick(this.item)
       }
     })
   }
 
   private formatDateTime(millis: number): string {
     const date = new Date(millis)
-    const fmt = new Intl.DateTimeFormat('zh-CN', {
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-    return fmt.format(date)
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const hour = date.getHours().toString().padStart(2, '0')
+    const minute = date.getMinutes().toString().padStart(2, '0')
+    const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+    return `${months[date.getMonth()]}${day}日 ${hour}:${minute}`
   }
 
   private getRepeatLabel(): string {
@@ -130,7 +129,31 @@ export class ScheduleItemWrapper {
 
   constructor(item?: Partial<ScheduleItemWrapper>) {
     if (item) {
-      Object.assign(this, item)
+      if (item.id !== undefined) this.id = item.id
+      if (item.userId !== undefined) this.userId = item.userId
+      if (item.scheduledAt !== undefined) this.scheduledAt = item.scheduledAt
+      if (item.repeatYearly !== undefined) this.repeatYearly = item.repeatYearly
+      if (item.repeatByLunar !== undefined) this.repeatByLunar = item.repeatByLunar
+      if (item.repeatType !== undefined) this.repeatType = item.repeatType
+      if (item.repeatRangeStart !== undefined) this.repeatRangeStart = item.repeatRangeStart
+      if (item.repeatRangeEnd !== undefined) this.repeatRangeEnd = item.repeatRangeEnd
+      if (item.repeatMonth !== undefined) this.repeatMonth = item.repeatMonth
+      if (item.repeatDayOfMonth !== undefined) this.repeatDayOfMonth = item.repeatDayOfMonth
+      if (item.repeatWeekday !== undefined) this.repeatWeekday = item.repeatWeekday
+      if (item.repeatHour !== undefined) this.repeatHour = item.repeatHour
+      if (item.repeatMinute !== undefined) this.repeatMinute = item.repeatMinute
+      if (item.lunarMonth !== undefined) this.lunarMonth = item.lunarMonth
+      if (item.lunarDay !== undefined) this.lunarDay = item.lunarDay
+      if (item.lunarLeap !== undefined) this.lunarLeap = item.lunarLeap
+      if (item.title !== undefined) this.title = item.title
+      if (item.content !== undefined) this.content = item.content
+      if (item.author !== undefined) this.author = item.author
+      if (item.mood !== undefined) this.mood = item.mood
+      if (item.weather !== undefined) this.weather = item.weather
+      if (item.location !== undefined) this.location = item.location
+      if (item.createdAt !== undefined) this.createdAt = item.createdAt
+      if (item.updatedAt !== undefined) this.updatedAt = item.updatedAt
+      if (item.previewContentPriority !== undefined) this.previewContentPriority = item.previewContentPriority
     }
   }
 

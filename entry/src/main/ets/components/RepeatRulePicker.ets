@@ -2,6 +2,11 @@
  * RepeatRulePicker - 重复规则选择器
  * 对标 Android: RepeatRulePicker
  */
+interface RepeatTypeOption {
+  value: string
+  label: string
+}
+
 @Component
 export struct RepeatRulePicker {
   @Link selectedType: string
@@ -10,7 +15,7 @@ export struct RepeatRulePicker {
   @Link repeatRangeStart: number | null
   @Link repeatRangeEnd: number | null
 
-  private repeatTypes = [
+  private repeatTypes: RepeatTypeOption[] = [
     { value: 'NONE', label: '不重复' },
     { value: 'DAILY', label: '每天' },
     { value: 'WEEKLY', label: '每周' },
@@ -18,7 +23,8 @@ export struct RepeatRulePicker {
     { value: 'YEARLY', label: '每年' }
   ]
 
-  private weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  private weekdays: string[] = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  private dayOptions: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
 
   build() {
     Column() {
@@ -29,7 +35,7 @@ export struct RepeatRulePicker {
         .margin({ bottom: 8 })
 
       List() {
-        ForEach(this.repeatTypes, (option: { value: string, label: string }) => {
+        ForEach(this.repeatTypes, (option: RepeatTypeOption) => {
           ListItem() {
             Row() {
               Text(option.label)
@@ -79,18 +85,18 @@ export struct RepeatRulePicker {
           .margin({ top: 16, bottom: 8 })
 
         Grid() {
-          ForEach(31, (day: number) => {
+          ForEach(this.dayOptions, (day: number) => {
             GridItem() {
-              Text((day + 1).toString())
+              Text(day.toString())
                 .fontSize(14)
                 .width(40)
                 .height(40)
                 .textAlign(TextAlign.Center)
-                .backgroundColor(this.selectedDayOfMonth === day + 1 ? '#1890FF' : '#F5F5F5')
-                .fontColor(this.selectedDayOfMonth === day + 1 ? '#FFF' : '#333')
+                .backgroundColor(this.selectedDayOfMonth === day ? '#1890FF' : '#F5F5F5')
+                .fontColor(this.selectedDayOfMonth === day ? '#FFF' : '#333')
                 .borderRadius(20)
                 .onClick(() => {
-                  this.selectedDayOfMonth = day + 1
+                  this.selectedDayOfMonth = day
                 })
             }
           })

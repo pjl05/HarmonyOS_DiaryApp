@@ -23,6 +23,5 @@ export struct CalendarWeekdayHeader {
     .height(32)
     .padding({ left: 8, right: 8 })
     .scale({ x: this.zoomScale, y: 1 })
-    .transformCenter({ x: 0, y: 0 })
   }
 }

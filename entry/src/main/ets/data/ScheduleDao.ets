@@ -60,33 +60,38 @@ export class ScheduleDao {
     return result
   }
 
-  async update(item: Partial<ScheduleItem>): Promise<number> {
+  async update(item: Partial<ScheduleItem>): Promise<void> {
     const bucket = this.toValuesBucket(item)
     const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
     predicates.equalTo('id', item.id!)
-    return await this.store!.update(TABLE_NAME, bucket, predicates)
+    await this.store!.update(bucket, predicates)
   }
 
-  async deleteById(id: number): Promise<number> {
+  async deleteById(id: number): Promise<void> {
     const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
     predicates.equalTo('id', id)
-    return await this.store!.delete(TABLE_NAME, predicates)
+    await this.store!.delete(predicates)
   }
 
   async getAll(userId: string): Promise<ScheduleItem[]> {
     const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
     predicates.equalTo('userId', userId)
     predicates.orderByDesc('scheduledAt')
-    const result = await this.store!.query(TABLE_NAME, [predicates])
+    const result = await this.store!.query(predicates)
     return this.parseResultSet(result)
   }
 
   async getById(id: number): Promise<ScheduleItem | null> {
     const predicates = new relationalStore.RdbPredicates(TABLE_NAME)
     predicates.equalTo('id', id)
-    const result = await this.store!.query(TABLE_NAME, [predicates])
-    if (!result.goToFirstRow()) return null
-    return this.parseRow(result)
+    const result = await this.store!.query(predicates)
+    if (!result.goToFirstRow()) {
+      result.close()
+      return null
+    }
+    const item = this.parseRow(result)
+    result.close()
+    return item
   }
 
   async getAllList(userId: string): Promise<ScheduleItem[]> {
@@ -139,7 +144,7 @@ export class ScheduleDao {
       scheduledAt: result.getLong(result.getColumnIndex('scheduledAt')),
       repeatYearly: result.getLong(result.getColumnIndex('repeatYearly')) === 1,
       repeatByLunar: result.getLong(result.getColumnIndex('repeatByLunar')) === 1,
-      repeatType: result.getString(result.getColumnIndex('repeatType')) as any,
+      repeatType: result.getString(result.getColumnIndex('repeatType')),
       repeatRangeStart: result.getLong(result.getColumnIndex('repeatRangeStart')),
       repeatRangeEnd: result.getLong(result.getColumnIndex('repeatRangeEnd')),
       repeatMonth: result.getLong(result.getColumnIndex('repeatMonth')),

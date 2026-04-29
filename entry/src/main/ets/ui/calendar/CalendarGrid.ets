@@ -6,6 +6,7 @@ import { CalendarViewModel } from '../../viewmodel/CalendarViewModel';
 import { CalendarCell, CalendarDayState } from '../../model/CalendarCellModel';
 import { CalendarDayStateWrapper } from './CalendarDayCell';
 import { CalendarWeekdayHeader } from './CalendarWeekdayHeader';
+import { CalendarDayCell } from './CalendarDayCell';
 import { promptAction, router } from '@kit.ArkUI';
 
 @Component
@@ -57,7 +58,7 @@ export struct CalendarGrid {
       CalendarWeekdayHeader({ zoomScale: this.zoomScale })
 
       List({ scroller: this.scroller, initialIndex: this.getTodayIndex() }) {
-        LazyForEach(this.viewModel.cells, (cell: CalendarCell, index: number) => {
+        ForEach(this.viewModel.cells, (cell: CalendarCell, index: number) => {
           ListItem() {
             this.buildWeekRow(index)
           }
@@ -71,7 +72,7 @@ export struct CalendarGrid {
       .gesture(
         PinchGesture()
           .onActionUpdate((event) => {
-            const newScale = (this.zoomScale * event.scale).coerceIn(1.0, 2.5);
+            const newScale = Math.min(2.5, Math.max(1.0, this.zoomScale * event.scale));
             this.zoomScale = newScale;
             this.viewModel.setZoomScale(newScale);
           })
@@ -83,7 +84,7 @@ export struct CalendarGrid {
   }
 
   @Builder
-  buildWeekRow(startIndex: number): Row {
+  buildWeekRow(startIndex: number) {
     Row() {
       ForEach(
         this.viewModel.cells.slice(startIndex, startIndex + 7),
@@ -113,19 +114,20 @@ export struct CalendarGrid {
         { text: '写日子', color: '#FFFF9800' },
         { text: '查看日记', color: '#FF999999' }
       ]
-    }).then((index) => {
+    }).then((response) => {
+      const index = response.index
       switch (index) {
         case 0:
-          router.pushUrl({ url: 'pages/DiaryEditPage' }, { params: { diary_record_at: cell.date } });
+          router.pushUrl({ url: 'pages/diary/DiaryEditPage', params: { diary_record_at: cell.date } });
           break;
         case 1:
-          router.pushUrl({ url: 'pages/ScheduleEditPage' }, { params: { schedule_date: cell.date } });
+          router.pushUrl({ url: 'pages/ScheduleEditPage', params: { schedule_date: cell.date } });
           break;
         case 2:
-          router.pushUrl({ url: 'pages/DayPage' }, { params: { day_date: cell.date } });
+          router.pushUrl({ url: 'pages/DayPage', params: { day_date: cell.date } });
           break;
         case 3:
-          router.pushUrl({ url: 'pages/DiaryPage' }, { params: { date: cell.date } });
+          router.pushUrl({ url: 'pages/DiaryPage', params: { date: cell.date } });
           break;
       }
     });
@@ -146,6 +148,6 @@ export struct CalendarGrid {
   private getTodayIndex(): number {
     const today = new Date();
     const todayKey = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-    return this.viewModel.dayIndexMap.get(todayKey) ?? 1200;
+    return this.viewModel.getDayIndex(todayKey) ?? 1200;
   }
 }

@@ -2,7 +2,7 @@
  * FloatingAIBallView - 悬浮球组件
  * 替换 Android: FloatingAIBallView (拖拽悬浮球)
  */
-import { router } from '@kit.RouterKit'
+import router from '@ohos.router'
 
 @Component
 export struct FloatingAIBallView {
